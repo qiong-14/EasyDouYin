@@ -3,8 +3,8 @@
 package main
 
 import (
-	"github.com/RaymondCode/simple-demo/handler"
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/wanyuyaoxiao/EasyDouYin/simple-demo/handler"
 )
 
 // customizeRegister registers customize routers.

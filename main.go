@@ -3,8 +3,8 @@
 package main
 
 import (
-	"github.com/RaymondCode/simple-demo/service"
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/wanyuyaoxiao/EasyDouYin/simple-demo/service"
 )
 
 func main() {

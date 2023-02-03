@@ -4,7 +4,7 @@ package main
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/wanyuyaoxiao/EasyDouYin/simple-demo/handler"
+	"github.com/wanyuyaoxiao/EasyDouYin/handler"
 )
 
 // customizeRegister registers customize routers.

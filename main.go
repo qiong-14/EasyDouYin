@@ -4,7 +4,7 @@ package main
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/wanyuyaoxiao/EasyDouYin/simple-demo/service"
+	"github.com/wanyuyaoxiao/EasyDouYin/service"
 )
 
 func main() {

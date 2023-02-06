@@ -4,12 +4,14 @@ package main
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/wanyuyaoxiao/EasyDouYin/service"
+	"github.com/qiong-14/EasyDouYin/dal"
+	"github.com/qiong-14/EasyDouYin/service"
 )
 
 func main() {
 	go service.RunMessageServer()
-	h := server.Default(server.WithHostPorts("127.0.0.1:8080"))
-	customizedRegister(h)
+	dal.Init()
+	h := server.Default(server.WithHostPorts("0.0.0.0:8080"))
+	register(h)
 	h.Spin()
 }

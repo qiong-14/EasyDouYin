@@ -3,11 +3,10 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/qiong-14/EasyDouYin/biz/handler"
 	"io"
 	"net"
 	"sync"
-
-	"github.com/wanyuyaoxiao/EasyDouYin/handler"
 )
 
 var chatConnMap = sync.Map{}

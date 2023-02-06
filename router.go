@@ -4,32 +4,32 @@ package main
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/wanyuyaoxiao/EasyDouYin/handler"
+	handler "github.com/qiong-14/EasyDouYin/biz/handler"
 )
 
 // customizeRegister registers customize routers.
 func customizedRegister(r *server.Hertz) {
 	r.Static("/static", "./publish")
-	r1 := r.Group("/douyin")
+	r.GET("/ping", handler.Ping)
+	appRouter := r.Group("/douyin")
 	// basic apis
-	r1.GET("/feed/", handler.Feed)
-	r1.POST("/publish/action/", handler.Publish)
-	r1.GET("/publish/list/", handler.PublishList)
-	r1.GET("/user/", handler.UserInfo)
-	r1.POST("/user/register/", handler.Register)
-	r1.POST("/user/login/", handler.Login)
+	appRouter.GET("/feed/", handler.Feed)
+	appRouter.POST("/publish/action/", handler.Publish)
+	appRouter.GET("/publish/list/", handler.PublishList)
+	appRouter.GET("/user/", handler.UserInfo)
+	appRouter.POST("/user/register/", handler.Register)
+	appRouter.POST("/user/login/", handler.Login)
 
 	// extra apis - I
-	r1.POST("/favorite/action/", handler.FavoriteAction)
-	r1.GET("/favorite/list/", handler.FavoriteList)
-	r1.POST("/comment/action/", handler.CommentAction)
-	r1.GET("/comment/list/", handler.CommentList)
+	appRouter.POST("/favorite/action/", handler.FavoriteAction)
+	appRouter.GET("/favorite/list/", handler.FavoriteList)
+	appRouter.POST("/comment/action/", handler.CommentAction)
+	appRouter.GET("/comment/list/", handler.CommentList)
 	// extra apis - II
-	r1.POST("/relation/action/", handler.RelationAction)
-	r1.GET("/relation/follow/list/", handler.FollowList)
-	r1.GET("/relation/follower/list/", handler.FollowerList)
-	r1.GET("/relation/friend/list/", handler.FriendList)
-	r1.GET("/message/chat/", handler.MessageChat)
-	r1.POST("/message/action/", handler.MessageAction)
-	// your code ...
+	appRouter.POST("/relation/action/", handler.RelationAction)
+	appRouter.GET("/relation/follow/list/", handler.FollowList)
+	appRouter.GET("/relation/follower/list/", handler.FollowerList)
+	appRouter.GET("/relation/friend/list/", handler.FriendList)
+	appRouter.GET("/message/chat/", handler.MessageChat)
+	appRouter.POST("/message/action/", handler.MessageAction)
 }

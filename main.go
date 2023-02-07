@@ -3,14 +3,17 @@
 package main
 
 import (
+	"context"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/service"
+	minioUtils "github.com/qiong-14/EasyDouYin/utils/minio"
 )
 
 func main() {
 	go service.RunMessageServer()
 	dal.Init()
+	minioUtils.Init(context.Background())
 	h := server.Default(server.WithHostPorts("0.0.0.0:8080"))
 	register(h)
 	h.Spin()

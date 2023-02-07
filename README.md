@@ -31,5 +31,5 @@ curl --request POST 'http://localhost:8080/douyin/user/register/?username=testna
 > 基于`minio`和`redis`
 
 1. 启动`mysql`, 并执行[init.sql](pkg/configs/sql/init.sql), 初始化数据库
-2. 我们用单元测试的方式插入一些基础数据, 执行执行[random_data_test.go](tests/random_data_test.go), 执行之前, 请按照群里的要求配置好环境变量
+2. 我们用单元测试的方式插入一些基础数据, 执行[random_data_test.go](tests/random_data_test.go), 执行之前, 请按照群里的要求配置好环境变量
 3. 快乐的测试吧

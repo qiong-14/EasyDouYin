@@ -19,7 +19,7 @@ type FeedResponse struct {
 }
 
 func GetVideoStream(ctx context.Context, lastTime int64, limit int) []Video {
-	videoInfos := dal.GetVideoStreamInfo(context.Background(), 0, limit)
+	videoInfos := dal.GetVideoStreamInfo(ctx, lastTime, limit)
 	var videos []Video
 	for _, info := range videoInfos {
 		id := int64(info.ID)

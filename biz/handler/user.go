@@ -5,6 +5,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/qiong-14/EasyDouYin/dal"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"net/http"
 )
 
@@ -61,7 +62,9 @@ func Register(ctx context.Context, c *app.RequestContext) {
 			UserId:   u.ID,
 		})
 	}
-
+	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
+			c.Response.StatusCode(),
+			 c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 }
 
 func Login(ctx context.Context, c *app.RequestContext) {
@@ -81,6 +84,9 @@ func Login(ctx context.Context, c *app.RequestContext) {
 			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
 		})
 	}
+	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
+			c.Response.StatusCode(),
+			 c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 }
 
 func UserInfo(ctx context.Context, c *app.RequestContext) {

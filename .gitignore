@@ -2,4 +2,5 @@ EasyDouYin
 .idea/
 .vscode/
 *secure.sh
+dy_secure.sh
 .DS_Store

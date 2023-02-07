@@ -43,5 +43,4 @@ func GetUserByName(ctx context.Context, name string) (*User, error) {
 		return u, err
 	}
 	return u, nil
-
 }

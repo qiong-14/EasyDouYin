@@ -2,3 +2,5 @@ EasyDouYin
 .idea/
 .vscode/
 *secure.sh
+.D
+.DS_Store

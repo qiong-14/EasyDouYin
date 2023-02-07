@@ -11,12 +11,6 @@ import (
 	"time"
 )
 
-// SERVER_IP=124.221.190.158
-// MINIO_PORT=9000
-// MINIO_ENDPOINT=$SERVER_IP:$MINIO_PORT
-// MINIO_ACCESS_KEY=iR1BteCtymOsJ7rY
-// MINIO_SECRET_KEY=SMDeqEnnKdOvRt1hgbHzE5PmG4uhAPbf
-// MINIO_BUCKET=videos-and-covers
 var (
 	endpoint        = utils.GetEnvByKey("MINIO_ENDPOINT")
 	accessKeyID     = utils.GetEnvByKey("MINIO_ACCESS_KEY")

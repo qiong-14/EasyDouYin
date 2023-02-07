@@ -10,7 +10,7 @@ docker-compose up
 ```
 运行程序
 ```shell
-go build && ./EasyDouYin
+make all
 ```
 ## 注册用户
 请求

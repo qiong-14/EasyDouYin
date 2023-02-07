@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/pkg/constants"
 	minioUtils "github.com/qiong-14/EasyDouYin/utils/minio"
@@ -54,4 +55,7 @@ func Feed(ctx context.Context, c *app.RequestContext) {
 		VideoList: GetVideoStream(ctx, 0, constants.FeedVideosCount),
 		NextTime:  time.Now().Unix(),
 	})
+	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
+			c.Response.StatusCode(),
+			 c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 }

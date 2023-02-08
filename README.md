@@ -8,6 +8,10 @@
 ```shell
 docker-compose up
 ```
+写入环境变量
+```shell
+source dy_secure_config.sh
+```
 运行程序
 ```shell
 make all

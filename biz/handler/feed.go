@@ -5,7 +5,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	"github.com/qiong-14/EasyDouYin/biz/common"
+	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/pkg/constants"
 	minioUtils "github.com/qiong-14/EasyDouYin/utils/minio"
@@ -14,26 +14,26 @@ import (
 )
 
 type FeedResponse struct {
-	common.Response
-	VideoList []common.Video `json:"video_list,omitempty"`
-	NextTime  int64          `json:"next_time,omitempty"`
+	resp.Response
+	VideoList []resp.Video `json:"video_list,omitempty"`
+	NextTime  int64        `json:"next_time,omitempty"`
 }
 
-func GetVideoStream(ctx context.Context, lastTime int64, limit int) []common.Video {
+func GetVideoStream(ctx context.Context, lastTime int64, limit int) []resp.Video {
 	videoInfos := dal.GetVideoStreamInfo(ctx, lastTime, limit)
-	var videos []common.Video
+	var videos []resp.Video
 	for _, info := range videoInfos {
 		id := int64(info.ID)
-		user, _ := dal.GetUserById(context.Background(), id)
+		userInfo, _ := dal.GetUserById(context.Background(), id)
 		playUrl, coverUrl, _ := minioUtils.GetUrlOfVideoAndCover(context.Background(),
 			info.Title, time.Hour)
 		//fmt.Println(playUrl.String())
 		//fmt.Println("cover", coverUrl.String())
-		video := &common.Video{
+		video := &resp.Video{
 			Id: id,
-			Author: common.User{
-				Id:            user.Id,
-				Name:          user.Name,
+			Author: resp.User{
+				Id:            userInfo.Id,
+				Name:          userInfo.Name,
 				FollowCount:   int64(rand.Intn(1999)), // 随机给的
 				FollowerCount: int64(rand.Intn(1000)),
 				IsFollow:      false,
@@ -49,8 +49,9 @@ func GetVideoStream(ctx context.Context, lastTime int64, limit int) []common.Vid
 	return videos
 }
 func Feed(ctx context.Context, c *app.RequestContext) {
+	//fmt.Println(c.Query("NextTime"))
 	c.JSON(consts.StatusOK, FeedResponse{
-		Response:  common.Response{StatusCode: 0},
+		Response:  resp.Response{StatusCode: 0},
 		VideoList: GetVideoStream(ctx, 0, constants.FeedVideosCount),
 		NextTime:  time.Now().Unix(),
 	})

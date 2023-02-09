@@ -1,8 +1,8 @@
 package handler
 
-import "github.com/qiong-14/EasyDouYin/biz/common"
+import "github.com/qiong-14/EasyDouYin/biz/resp"
 
-var DemoVideos = []common.Video{
+var DemoVideos = []resp.Video{
 	{
 		Id:            1,
 		Author:        DemoUser,
@@ -14,7 +14,7 @@ var DemoVideos = []common.Video{
 	},
 }
 
-var DemoComments = []common.Comment{
+var DemoComments = []resp.Comment{
 	{
 		Id:         1,
 		User:       DemoUser,
@@ -23,7 +23,7 @@ var DemoComments = []common.Comment{
 	},
 }
 
-var DemoUser = common.User{
+var DemoUser = resp.User{
 	Id:            1,
 	Name:          "TestUser",
 	FollowCount:   0,

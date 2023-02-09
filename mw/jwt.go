@@ -2,10 +2,9 @@ package mw
 
 import (
 	"context"
-	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/qiong-14/EasyDouYin/biz/common"
+	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/pkg/constants"
 	"net/http"
 	"time"
@@ -62,34 +61,23 @@ func LoginAuthentication() app.HandlerFunc {
 			tokenStr = c.PostForm("token")
 		}
 		if len(tokenStr) == 0 {
-			c.JSON(http.StatusOK, common.Response{
+			c.JSON(http.StatusOK, resp.Response{
 				StatusCode: 401,
-				StatusMsg:  "token not exist",
+				StatusMsg:  "Token doesn't exist",
 			})
 			c.Abort()
 			return
 		}
 		token, err := ParseToken(tokenStr)
 		if err != nil {
-			fmt.Println("token not correct")
-			c.JSON(http.StatusOK, common.Response{
+			c.JSON(http.StatusOK, resp.Response{
 				StatusCode: 403,
-				StatusMsg:  "token not correct",
+				StatusMsg:  err.Error(),
 			})
 			c.Abort()
 			return
 		}
-		if time.Now().Unix() > token.ExpiresAt {
-			fmt.Println("token expired")
-			c.JSON(http.StatusOK, common.Response{
-				StatusCode: 402,
-				StatusMsg:  "token expired",
-			})
-			c.Abort() //阻止执行
-			return
-		}
-		if len(c.Query("user_id")) == 0 {
-			c.Set("user_id", token.UserId)
-		}
+		c.Set("user_id", token.UserId)
+		c.Next(ctx)
 	}
 }

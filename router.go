@@ -5,29 +5,32 @@ package main
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	handler "github.com/qiong-14/EasyDouYin/biz/handler"
+	"github.com/qiong-14/EasyDouYin/mw"
 )
 
 // customizeRegister registers customize routers.
 func customizedRegister(r *server.Hertz) {
 	r.Static("/static", "./publish")
+	r.GET("/ping", handler.Ping)
 	appRouter := r.Group("/douyin")
 	// basic apis
-	appRouter.GET("/feed/", handler.Feed)                // 视频流
-	appRouter.POST("/publish/action/", handler.Publish)  // 发布视频 登陆鉴权
-	appRouter.GET("/publish/list/", handler.PublishList) // 视频列表 登陆鉴权
-	appRouter.GET("/user/", handler.UserInfo)            // 用户信息 登陆鉴权
-	appRouter.POST("/user/register/", handler.Register)  // 注册 授权
-	appRouter.POST("/user/login/", handler.Login)        // 登陆 授权
+	appRouter.GET("/feed/", handler.Feed)
+	appRouter.POST("/publish/action/", mw.LoginAuthentication(), handler.Publish)
+	appRouter.GET("/publish/list/", mw.LoginAuthentication(), handler.PublishList)
+	appRouter.GET("/user/", mw.LoginAuthentication(), handler.UserInfo)
+	appRouter.POST("/user/register/", handler.Register)
+	appRouter.POST("/user/login/", handler.Login)
+
 	// extra apis - I
-	appRouter.POST("/favorite/action/", handler.FavoriteAction) // 点赞操作 登陆鉴权
-	appRouter.GET("/favorite/list/", handler.FavoriteList)      // 点赞列表 登陆鉴权
-	appRouter.POST("/comment/action/", handler.CommentAction)   // 评论操作 登陆鉴权
-	appRouter.GET("/comment/list/", handler.CommentList)        // 评论列表 登陆鉴权
+	appRouter.POST("/favorite/action/", mw.LoginAuthentication(), handler.FavoriteAction)
+	appRouter.GET("/favorite/list/", mw.LoginAuthentication(), handler.FavoriteList)
+	appRouter.POST("/comment/action/", mw.LoginAuthentication(), handler.CommentAction)
+	appRouter.GET("/comment/list/", mw.LoginAuthentication(), handler.CommentList)
 	// extra apis - II
-	appRouter.POST("/relation/action/", handler.RelationAction)
-	appRouter.GET("/relation/follow/list/", handler.FollowList)
-	appRouter.GET("/relation/follower/list/", handler.FollowerList)
-	appRouter.GET("/relation/friend/list/", handler.FriendList)
-	appRouter.GET("/message/chat/", handler.MessageChat)
-	appRouter.POST("/message/action/", handler.MessageAction)
+	appRouter.POST("/relation/action/", mw.LoginAuthentication(), handler.RelationAction)
+	appRouter.GET("/relation/follow/list/", mw.LoginAuthentication(), handler.FollowList)
+	appRouter.GET("/relation/follower/list/", mw.LoginAuthentication(), handler.FollowerList)
+	appRouter.GET("/relation/friend/list/", mw.LoginAuthentication(), handler.FriendList)
+	appRouter.GET("/message/chat/", mw.LoginAuthentication(), handler.MessageChat)
+	appRouter.POST("/message/action/", mw.LoginAuthentication(), handler.MessageAction)
 }

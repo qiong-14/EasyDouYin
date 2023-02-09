@@ -3,53 +3,63 @@ package handler
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/qiong-14/EasyDouYin/biz/common"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"net/http"
-	"strconv"
 )
 
 type CommentListResponse struct {
-	common.Response
-	CommentList []common.Comment `json:"comment_list,omitempty"`
+	resp.Response
+	CommentList []resp.Comment `json:"comment_list,omitempty"`
 }
 
 type CommentActionResponse struct {
-	common.Response
-	Comment common.Comment `json:"comment,omitempty"`
+	resp.Response
+	Comment resp.Comment `json:"comment,omitempty"`
 }
 
 // CommentAction no practical effect, just check if token is valid
 func CommentAction(ctx context.Context, c *app.RequestContext) {
-	userid := c.Query("user_id")
+	userId, _ := c.Get("user_id")
+	userIdA, _ := userId.(int64)
+
 	actionType := c.Query("action_type")
-	userId, _ := strconv.ParseInt(userid, 10, 64)
-	if user, err := dal.GetUserById(ctx, userId); err == nil {
+
+	if user, err := dal.GetUserById(ctx, userIdA); err == nil {
 		if actionType == "1" {
 			text := c.Query("comment_text")
-			c.JSON(http.StatusOK, CommentActionResponse{Response: common.Response{StatusCode: 0},
-				Comment: common.Comment{
+			c.JSON(http.StatusOK, CommentActionResponse{Response: resp.Response{StatusCode: 0},
+				Comment: resp.Comment{
 					Id: 1,
-					User: common.User{
+					User: resp.User{
+						Id:            user.Id,
 						Name:          user.Name,
-						FollowCount:   2,
-						FollowerCount: 3,
+						FollowCount:   100,
+						FollowerCount: 101,
+						IsFollow:      true,
 					},
 					Content:    text,
 					CreateDate: "05-01",
 				}})
 			return
 		}
-		c.JSON(http.StatusOK, common.Response{StatusCode: 0})
+		c.JSON(http.StatusOK, resp.Response{StatusCode: 0})
 	} else {
-		c.JSON(http.StatusOK, common.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 	}
+	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
+		c.Response.StatusCode(),
+		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 }
 
 // CommentList all videos have same demo comment list
 func CommentList(ctx context.Context, c *app.RequestContext) {
 	c.JSON(http.StatusOK, CommentListResponse{
-		Response:    common.Response{StatusCode: 0},
+		Response:    resp.Response{StatusCode: 0},
 		CommentList: DemoComments,
 	})
+	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
+		c.Response.StatusCode(),
+		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 }

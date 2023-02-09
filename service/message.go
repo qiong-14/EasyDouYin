@@ -3,7 +3,7 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/qiong-14/EasyDouYin/biz/common"
+	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"io"
 	"net"
 	"sync"
@@ -43,7 +43,7 @@ func process(conn net.Conn) {
 			continue
 		}
 
-		var event = common.MessageSendEvent{}
+		var event = resp.MessageSendEvent{}
 		_ = json.Unmarshal(buf[:n], &event)
 		fmt.Printf("Receive Message：%+v\n", event)
 
@@ -60,7 +60,7 @@ func process(conn net.Conn) {
 			continue
 		}
 
-		pushEvent := common.MessagePushEvent{
+		pushEvent := resp.MessagePushEvent{
 			FromUserId: event.UserId,
 			MsgContent: event.MsgContent,
 		}

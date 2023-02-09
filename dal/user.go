@@ -21,7 +21,10 @@ func (u User) TableName() string {
 
 // CreateUser create user info
 func CreateUser(ctx context.Context, u *User) error {
-	if err := DB.WithContext(ctx).Create(u).Error; err != nil {
+	if err := DB.
+		WithContext(ctx).
+		Model(&User{}).
+		Create(u).Error; err != nil {
 		return err
 	}
 	return nil
@@ -42,11 +45,8 @@ func GetUserById(ctx context.Context, id int64) (*User, error) {
 // GetUserByName get user info by name
 func GetUserByName(ctx context.Context, name string) (*User, error) {
 	u := &User{}
-	if err := DB.WithContext(ctx).
-		Model(&User{}).
-		Where("name = ?", name).
-		First(u).Error; err != nil {
-		return nil, err
+	if err := DB.WithContext(ctx).Model(&User{}).Where("name = ?", name).First(u).Error; err != nil {
+		return u, err
 	}
 	return u, nil
 }

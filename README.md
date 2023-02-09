@@ -20,17 +20,3 @@ go test tests/random_data_test.go
 ```shell
 make all
 ```
-## 注册用户
-请求
-```shell
-curl --request POST 'http://localhost:8080/douyin/user/register/?username=testname&password=12345'
-```
-注册成功
-```shell
-{"status_code":0,"user_id":3,"token":""}
-```
-注册失败
-```shell
-{"status_code":1,"status_msg":"user already exits","token":""}
-```
-

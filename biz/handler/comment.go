@@ -3,46 +3,53 @@ package handler
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/qiong-14/EasyDouYin/biz/common"
+	"github.com/qiong-14/EasyDouYin/dal"
 	"net/http"
+	"strconv"
 )
 
 type CommentListResponse struct {
-	Response
-	CommentList []Comment `json:"comment_list,omitempty"`
+	common.Response
+	CommentList []common.Comment `json:"comment_list,omitempty"`
 }
 
 type CommentActionResponse struct {
-	Response
-	Comment Comment `json:"comment,omitempty"`
+	common.Response
+	Comment common.Comment `json:"comment,omitempty"`
 }
 
 // CommentAction no practical effect, just check if token is valid
 func CommentAction(ctx context.Context, c *app.RequestContext) {
-	token := c.Query("token")
+	userid := c.Query("user_id")
 	actionType := c.Query("action_type")
-
-	if user, exist := usersLoginInfo[token]; exist {
+	userId, _ := strconv.ParseInt(userid, 10, 64)
+	if user, err := dal.GetUserById(ctx, userId); err == nil {
 		if actionType == "1" {
 			text := c.Query("comment_text")
-			c.JSON(http.StatusOK, CommentActionResponse{Response: Response{StatusCode: 0},
-				Comment: Comment{
-					Id:         1,
-					User:       user,
+			c.JSON(http.StatusOK, CommentActionResponse{Response: common.Response{StatusCode: 0},
+				Comment: common.Comment{
+					Id: 1,
+					User: common.User{
+						Name:          user.Name,
+						FollowCount:   2,
+						FollowerCount: 3,
+					},
 					Content:    text,
 					CreateDate: "05-01",
 				}})
 			return
 		}
-		c.JSON(http.StatusOK, Response{StatusCode: 0})
+		c.JSON(http.StatusOK, common.Response{StatusCode: 0})
 	} else {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+		c.JSON(http.StatusOK, common.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 	}
 }
 
 // CommentList all videos have same demo comment list
 func CommentList(ctx context.Context, c *app.RequestContext) {
 	c.JSON(http.StatusOK, CommentListResponse{
-		Response:    Response{StatusCode: 0},
+		Response:    common.Response{StatusCode: 0},
 		CommentList: DemoComments,
 	})
 }

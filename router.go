@@ -10,21 +10,19 @@ import (
 // customizeRegister registers customize routers.
 func customizedRegister(r *server.Hertz) {
 	r.Static("/static", "./publish")
-	r.GET("/ping", handler.Ping)
 	appRouter := r.Group("/douyin")
 	// basic apis
-	appRouter.GET("/feed/", handler.Feed)
-	appRouter.POST("/publish/action/", handler.Publish)
-	appRouter.GET("/publish/list/", handler.PublishList)
-	appRouter.GET("/user/", handler.UserInfo)
-	appRouter.POST("/user/register/", handler.Register)
-	appRouter.POST("/user/login/", handler.Login)
-
+	appRouter.GET("/feed/", handler.Feed)                // 视频流
+	appRouter.POST("/publish/action/", handler.Publish)  // 发布视频 登陆鉴权
+	appRouter.GET("/publish/list/", handler.PublishList) // 视频列表 登陆鉴权
+	appRouter.GET("/user/", handler.UserInfo)            // 用户信息 登陆鉴权
+	appRouter.POST("/user/register/", handler.Register)  // 注册 授权
+	appRouter.POST("/user/login/", handler.Login)        // 登陆 授权
 	// extra apis - I
-	appRouter.POST("/favorite/action/", handler.FavoriteAction)
-	appRouter.GET("/favorite/list/", handler.FavoriteList)
-	appRouter.POST("/comment/action/", handler.CommentAction)
-	appRouter.GET("/comment/list/", handler.CommentList)
+	appRouter.POST("/favorite/action/", handler.FavoriteAction) // 点赞操作 登陆鉴权
+	appRouter.GET("/favorite/list/", handler.FavoriteList)      // 点赞列表 登陆鉴权
+	appRouter.POST("/comment/action/", handler.CommentAction)   // 评论操作 登陆鉴权
+	appRouter.GET("/comment/list/", handler.CommentList)        // 评论列表 登陆鉴权
 	// extra apis - II
 	appRouter.POST("/relation/action/", handler.RelationAction)
 	appRouter.GET("/relation/follow/list/", handler.FollowList)

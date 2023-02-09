@@ -4,33 +4,34 @@ import (
 	"context"
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/qiong-14/EasyDouYin/biz/common"
+	"github.com/qiong-14/EasyDouYin/dal"
 	"net/http"
 	"strconv"
 	"sync/atomic"
 	"time"
 )
 
-var tempChat = map[string][]Message{}
+var tempChat = map[string][]common.Message{}
 
 var messageIdSequence = int64(1)
 
 type ChatResponse struct {
-	Response
-	MessageList []Message `json:"message_list"`
+	common.Response
+	MessageList []common.Message `json:"message_list"`
 }
 
 // MessageAction no practical effect, just check if token is valid
 func MessageAction(ctx context.Context, c *app.RequestContext) {
-	token := c.Query("token")
 	toUserId := c.Query("to_user_id")
 	content := c.Query("content")
-
-	if user, exist := usersLoginInfo[token]; exist {
-		userIdB, _ := strconv.Atoi(toUserId)
-		chatKey := genChatKey(user.Id, int64(userIdB))
-
+	userId := c.Query("user_id")
+	userIdA, _ := strconv.ParseInt(userId, 10, 64)
+	userIdB, _ := strconv.ParseInt(toUserId, 10, 64)
+	if user, err := dal.GetUserById(ctx, userIdA); err == nil {
+		chatKey := genChatKey(user.Id, userIdB)
 		atomic.AddInt64(&messageIdSequence, 1)
-		curMessage := Message{
+		curMessage := common.Message{
 			Id:         messageIdSequence,
 			Content:    content,
 			CreateTime: time.Now().Format(time.Kitchen),
@@ -39,26 +40,26 @@ func MessageAction(ctx context.Context, c *app.RequestContext) {
 		if messages, exist := tempChat[chatKey]; exist {
 			tempChat[chatKey] = append(messages, curMessage)
 		} else {
-			tempChat[chatKey] = []Message{curMessage}
+			tempChat[chatKey] = []common.Message{curMessage}
 		}
-		c.JSON(http.StatusOK, Response{StatusCode: 0})
+		c.JSON(http.StatusOK, common.Response{StatusCode: 0})
 	} else {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+		c.JSON(http.StatusOK, common.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 	}
 }
 
 // MessageChat all users have same follow list
 func MessageChat(ctx context.Context, c *app.RequestContext) {
-	token := c.Query("token")
 	toUserId := c.Query("to_user_id")
+	userId := c.Query("user_id")
 
-	if user, exist := usersLoginInfo[token]; exist {
-		userIdB, _ := strconv.Atoi(toUserId)
-		chatKey := genChatKey(user.Id, int64(userIdB))
-
-		c.JSON(http.StatusOK, ChatResponse{Response: Response{StatusCode: 0}, MessageList: tempChat[chatKey]})
+	userIdA, _ := strconv.ParseInt(userId, 10, 64)
+	userIdB, _ := strconv.ParseInt(toUserId, 10, 64)
+	if user, err := dal.GetUserById(ctx, userIdA); err != nil {
+		chatKey := genChatKey(user.Id, userIdB)
+		c.JSON(http.StatusOK, ChatResponse{Response: common.Response{StatusCode: 0}, MessageList: tempChat[chatKey]})
 	} else {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+		c.JSON(http.StatusOK, common.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 	}
 }
 

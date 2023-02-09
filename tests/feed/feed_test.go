@@ -3,7 +3,7 @@ package feed
 import (
 	"context"
 	"fmt"
-	handler "github.com/qiong-14/EasyDouYin/biz/handler"
+	handler "github.com/qiong-14/EasyDouYin/biz/common"
 	"github.com/qiong-14/EasyDouYin/dal"
 	minioUtils "github.com/qiong-14/EasyDouYin/utils/minio"
 	"math/rand"

@@ -9,7 +9,7 @@ import (
 // User Table Struct
 type User struct {
 	gorm.Model
-	ID       int64  `json:"id"`
+	Id       int64  `gorm:"primary_key"`
 	Name     string `json:"name"`
 	Password string `json:"password"`
 }
@@ -30,7 +30,10 @@ func CreateUser(ctx context.Context, u *User) error {
 // GetUserById get user info by id
 func GetUserById(ctx context.Context, id int64) (*User, error) {
 	u := &User{}
-	if err := DB.WithContext(ctx).Model(&User{}).Where("id = ?", id).Find(u).Error; err != nil {
+	if err := DB.WithContext(ctx).
+		Model(&User{}).
+		Where("id = ?", id).
+		First(u).Error; err != nil {
 		return u, err
 	}
 	return u, nil
@@ -39,8 +42,11 @@ func GetUserById(ctx context.Context, id int64) (*User, error) {
 // GetUserByName get user info by name
 func GetUserByName(ctx context.Context, name string) (*User, error) {
 	u := &User{}
-	if err := DB.WithContext(ctx).Model(&User{}).Where("name = ?", name).Find(u).Error; err != nil {
-		return u, err
+	if err := DB.WithContext(ctx).
+		Model(&User{}).
+		Where("name = ?", name).
+		First(u).Error; err != nil {
+		return nil, err
 	}
 	return u, nil
 }

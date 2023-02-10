@@ -20,3 +20,27 @@ go test tests/random_data_test.go
 ```shell
 make all
 ```
+
+### 用户注册
+基于Hertz.JWT鉴权的注册，注册后调用了mw.JwtMiddleware.LoginHandler进行登录
+```shell
+curl --request POST 'http://localhost:8080/douyin/user/register/?username=704788475&password=111111'
+# {"status_code":1,"status_msg":"user already exits","token":""}
+
+curl --request POST 'http://localhost:8080/douyin/user/register/?username=readygo&password=111111'
+# {"status_code":0,"status_msg":"login success","user_id":10,"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzYwNDU0NzAsImlkZW50aXR5IjoicmVhZHlnbyIsIm9yaWdfaWF0IjoxNjc2MDQxODcwfQ.3G05OinRGLYDGlsDz5zt4XJX4UnjW6XnILRk1SvK2gM"}
+```
+### 用户登录
+```shell
+curl --request POST 'http://localhost:8080/douyin/user/login/?username=readygo11&password=111111'
+# {"code":401,"message":"user already exists or wrong password"}
+
+ curl --request POST 'http://localhost:8080/douyin/user/login/?username=readygo&password=111111'
+# {"status_code":0,"status_msg":"login success","user_id":10,"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzYwNDU1ODYsImlkZW50aXR5IjoicmVhZHlnbyIsIm9yaWdfaWF0IjoxNjc2MDQxOTg2fQ.BIMU_OS2CLrmmN1vrW0XWkFwaPPu5gPtViBAnw-lXK4"}
+```
+
+### 鉴权后的ping
+```shell
+curl --location --request GET 'localhost:8080/douyin/ping' --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzYwNDU1ODYsImlkZW50aXR5IjoicmVhZHlnbyIsIm9yaWdfaWF0IjoxNjc2MDQxOTg2fQ.BIMU_OS2CLrmmN1vrW0XWkFwaPPu5gPtViBAnw-lXK4'
+# {"message":"username:readygo"}
+```

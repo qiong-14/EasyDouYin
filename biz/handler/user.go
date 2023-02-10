@@ -28,16 +28,6 @@ import (
 
 //var userIdSequence = int64(1)
 
-type UserLoginResponse struct {
-	resp.Response
-	UserId int64  `json:"user_id,omitempty"`
-	Token  string `json:"token"`
-}
-
-type UserResponse struct {
-	resp.Response
-	User resp.User `json:"user"`
-}
 
 func Register(ctx context.Context, c *app.RequestContext) {
 	username := c.Query("username")
@@ -46,58 +36,20 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	// 查找用户名是否已经注册
 	u, err := dal.GetUserByName(ctx, username)
 	if u.Name == username {
-		c.JSON(consts.StatusOK, UserLoginResponse{
+		c.JSON(consts.StatusOK, resp.UserLoginResponse{
 			Response: resp.Response{StatusCode: 1, StatusMsg: "user already exits"},
 		})
 		return
 	}
 	// 加密储存
 	if err = dal.CreateUser(ctx, &dal.User{Name: username, Password: utils.Encoder(password)}); err != nil {
-		c.JSON(consts.StatusOK, UserLoginResponse{
+		c.JSON(consts.StatusOK, resp.UserLoginResponse{
 			Response: resp.Response{StatusCode: 1, StatusMsg: "user create failed"},
 		})
 		return
 	}
-	if u, err = dal.GetUserByName(ctx, username); err != nil {
-		c.JSON(consts.StatusOK, UserLoginResponse{
-			Response: resp.Response{StatusCode: 1, StatusMsg: "failed to get user id"},
-		})
-		return
-	} else {
-		token, _ := mw.GenerateToken(u.Id, u.Name)
-		c.JSON(consts.StatusOK, UserLoginResponse{
-			Response: resp.Response{StatusCode: 0},
-			UserId:   u.Id,
-			Token:    token,
-		})
-	}
-	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
-		c.Response.StatusCode(),
-		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
-}
+	mw.JwtMiddleware.LoginHandler(ctx,c)
 
-func Login(ctx context.Context, c *app.RequestContext) {
-	username := c.Query("username")
-	password := c.Query("password")
-
-	if user, err := dal.GetUserByName(ctx, username); err == nil {
-		if utils.Encoder(password) == user.Password {
-			token, _ := mw.GenerateToken(user.Id, user.Name)
-			c.JSON(http.StatusOK, UserLoginResponse{
-				Response: resp.Response{StatusCode: 0},
-				UserId:   user.Id,
-				Token:    token,
-			})
-		} else {
-			c.JSON(http.StatusOK, UserLoginResponse{
-				Response: resp.Response{StatusCode: 1, StatusMsg: "user password error"},
-			})
-		}
-	} else {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: resp.Response{StatusCode: 1, StatusMsg: "user doesn't exist"},
-		})
-	}
 	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
 		c.Response.StatusCode(),
 		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
@@ -106,7 +58,7 @@ func Login(ctx context.Context, c *app.RequestContext) {
 func UserInfo(ctx context.Context, c *app.RequestContext) {
 	id, _ := strconv.ParseInt(c.Query("user_id"), 10, 64)
 	if user, err := dal.GetUserById(ctx, id); err == nil {
-		c.JSON(http.StatusOK, UserResponse{
+		c.JSON(http.StatusOK, resp.UserResponse{
 			Response: resp.Response{StatusCode: 0},
 			User: resp.User{
 				Id:   user.Id,
@@ -114,7 +66,7 @@ func UserInfo(ctx context.Context, c *app.RequestContext) {
 			},
 		})
 	} else {
-		c.JSON(http.StatusOK, UserResponse{
+		c.JSON(http.StatusOK, resp.UserResponse{
 			Response: resp.Response{StatusCode: 1, StatusMsg: "user doesn't exist"},
 		})
 	}

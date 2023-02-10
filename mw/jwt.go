@@ -3,81 +3,95 @@ package mw
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/hertz-contrib/jwt"
+	utils2 "github.com/qiong-14/EasyDouYin/utils"
+	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/biz/resp"
-	"github.com/qiong-14/EasyDouYin/pkg/constants"
+	
 	"net/http"
 	"time"
+	"errors"
+	"strings"
+	"encoding/base64"
+	"encoding/json"
 )
 
-type Claims struct {
-	UserId   int64
-	UserName string
-	jwt.StandardClaims
-}
+ var (
+	 JwtMiddleware *jwt.HertzJWTMiddleware
+	 IdentityKey   = "identity"
+ )
 
-// GenerateToken 通过username生成token,设置过期时间为
-func GenerateToken(userid int64, username string) (string, error) {
-	claims := &Claims{
-		UserId:   userid,
-		UserName: username, // 私有字段
-		StandardClaims: jwt.StandardClaims{
-			Issuer:    constants.JWTIssuer,                       // 签发人
-			ExpiresAt: time.Now().Unix() + constants.JWTDuration, // 过期时间
-			Subject:   constants.JWTSubject,                      // 主题
-			Audience:  constants.JWTAudience,                     // 受众
-			NotBefore: time.Now().Unix(),                         // 生效时间
-			IssuedAt:  time.Now().Unix(),                         // 签发时间
-		},
-	}
-	// hash256加密算法产生token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	if tokenString, err := token.SignedString([]byte(constants.JWTSecret)); err != nil {
-		return "", err
-	} else {
-		return tokenString, nil
-	}
-}
-
-func ParseToken(token string) (*Claims, error) {
-	tokenClaims, err := jwt.ParseWithClaims(token, &Claims{}, func(t *jwt.Token) (interface{}, error) {
-		return []byte(constants.JWTSecret), nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	if tokenClaims != nil {
-		if claims, ok := tokenClaims.Claims.(*Claims); ok && tokenClaims.Valid {
-			return claims, nil
-		}
-	}
-	return nil, err
-}
-
-func LoginAuthentication() app.HandlerFunc {
-	return func(ctx context.Context, c *app.RequestContext) {
-		tokenStr := c.Query("token")
-		if len(tokenStr) == 0 {
-			tokenStr = c.PostForm("token")
-		}
-		if len(tokenStr) == 0 {
-			c.JSON(http.StatusOK, resp.Response{
-				StatusCode: 401,
-				StatusMsg:  "Token doesn't exist",
+ 
+ func InitJwt() {
+	 var err error
+	 JwtMiddleware, err = jwt.New(&jwt.HertzJWTMiddleware{
+		 Realm:         "test zone",
+		 Key:           []byte("secret key"),
+		 Timeout:       time.Hour,
+		 MaxRefresh:    time.Hour,
+		 TokenLookup:   "header: Authorization, query: token, cookie: jwt",
+		 TokenHeadName: "Bearer",
+		 Authenticator: func(ctx context.Context, c *app.RequestContext) (interface{}, error) {
+			 var loginStruct struct {
+				 Username  string `form:"username" json:"username" query:"username" vd:"(len($) > 0 && len($) < 30); msg:'Illegal format'"`
+				 Password string `form:"password" json:"password" query:"password" vd:"(len($) > 0 && len($) < 30); msg:'Illegal format'"`
+			 }
+			 if err := c.BindAndValidate(&loginStruct); err != nil {
+				 return nil, err
+			 }
+			 if user, err := dal.GetUserByName(ctx, loginStruct.Username); err == nil {
+				if utils2.Encoder(loginStruct.Password) == user.Password{
+					return user,nil
+				}
+			 }else{
+				 return nil, errors.New("user already exists or wrong password")
+			 }
+			 return nil, err
+		 },
+		 IdentityKey: IdentityKey,
+		 IdentityHandler: func(ctx context.Context, c *app.RequestContext) interface{} {
+			 claims := jwt.ExtractClaims(ctx, c)
+			 return &dal.User{
+				Name: claims[IdentityKey].(string),
+			 }
+		 },
+		 PayloadFunc: func(data interface{}) jwt.MapClaims {
+			 if v, ok := data.(*dal.User); ok {
+				 return jwt.MapClaims{
+					 IdentityKey: v.Name,
+				 }
+			 }
+			 return jwt.MapClaims{}
+		 },
+		 LoginResponse: func(ctx context.Context, c *app.RequestContext, code int, token string, expire time.Time) {
+			payloads := resp.Payload{}
+			json_payloads, _ := base64.RawURLEncoding.DecodeString(strings.Split(token, ".")[1])
+			err=json.Unmarshal(json_payloads, &payloads)
+			u,_:=dal.GetUserByName(ctx,payloads.Identity)
+			c.JSON(http.StatusOK, resp.UserLoginResponse{
+				Response: resp.Response{StatusCode: 0,StatusMsg:"login success" },
+				UserId:   u.Id,
+				Token:    token,
 			})
-			c.Abort()
-			return
-		}
-		token, err := ParseToken(tokenStr)
-		if err != nil {
-			c.JSON(http.StatusOK, resp.Response{
-				StatusCode: 403,
-				StatusMsg:  err.Error(),
-			})
-			c.Abort()
-			return
-		}
-		c.Set("user_id", token.UserId)
-		c.Next(ctx)
-	}
-}
+			if err!=nil{
+				panic(err)
+			}
+		 },
+		 HTTPStatusMessageFunc: func(e error, ctx context.Context, c *app.RequestContext) string {
+			 hlog.CtxErrorf(ctx, "jwt biz err = %+v", e.Error())
+			 return e.Error()
+		 },
+		 Unauthorized: func(ctx context.Context, c *app.RequestContext, code int, message string) {
+			 c.JSON(http.StatusOK, utils.H{
+				 "code":    code,
+				 "message": message,
+			 })
+		 },
+	 })
+	 if err != nil {
+		 panic(err)
+	 }
+ }
+ 

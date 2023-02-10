@@ -12,26 +12,30 @@ import (
 func GeneratedRegister(r *server.Hertz) {
 	//INSERT_POINT: DO NOT DELETE THIS LINE!
 	r.Static("/static", "./publish")
-	r.GET("/ping", handler.Ping)
+
 	appRouter := r.Group("/douyin")
-	// basic apis
 	appRouter.GET("/feed/", handler.Feed)
-	appRouter.POST("/publish/action/", mw.LoginAuthentication(), handler.Publish)
-	appRouter.GET("/publish/list/", mw.LoginAuthentication(), handler.PublishList)
-	appRouter.GET("/user/", mw.LoginAuthentication(), handler.UserInfo)
 	appRouter.POST("/user/register/", handler.Register)
-	appRouter.POST("/user/login/", handler.Login)
+	appRouter.POST("/user/login/", mw.JwtMiddleware.LoginHandler)
+	appRouter.GET("/ping",mw.JwtMiddleware.MiddlewareFunc(),handler.Ping)
+	
+	// basic apis
+	
+	appRouter.POST("/publish/action/",mw.JwtMiddleware.MiddlewareFunc(), handler.Publish)
+	appRouter.GET("/publish/list/",mw.JwtMiddleware.MiddlewareFunc(), handler.PublishList)
+	appRouter.GET("/user/",mw.JwtMiddleware.MiddlewareFunc(), handler.UserInfo)
+	
 
 	// extra apis - I
-	appRouter.POST("/favorite/action/", mw.LoginAuthentication(), handler.FavoriteAction)
-	appRouter.GET("/favorite/list/", mw.LoginAuthentication(), handler.FavoriteList)
-	appRouter.POST("/comment/action/", mw.LoginAuthentication(), handler.CommentAction)
-	appRouter.GET("/comment/list/", mw.LoginAuthentication(), handler.CommentList)
+	appRouter.POST("/favorite/action/",mw.JwtMiddleware.MiddlewareFunc(), handler.FavoriteAction)
+	appRouter.GET("/favorite/list/",mw.JwtMiddleware.MiddlewareFunc(), handler.FavoriteList)
+	appRouter.POST("/comment/action/",mw.JwtMiddleware.MiddlewareFunc(), handler.CommentAction)
+	appRouter.GET("/comment/list/",mw.JwtMiddleware.MiddlewareFunc(), handler.CommentList)
 	// extra apis - II
-	appRouter.POST("/relation/action/", mw.LoginAuthentication(), handler.RelationAction)
-	appRouter.GET("/relation/follow/list/", mw.LoginAuthentication(), handler.FollowList)
-	appRouter.GET("/relation/follower/list/", mw.LoginAuthentication(), handler.FollowerList)
-	appRouter.GET("/relation/friend/list/", mw.LoginAuthentication(), handler.FriendList)
-	appRouter.GET("/message/chat/", mw.LoginAuthentication(), handler.MessageChat)
-	appRouter.POST("/message/action/", mw.LoginAuthentication(), handler.MessageAction)
+	appRouter.POST("/relation/action/",mw.JwtMiddleware.MiddlewareFunc(), handler.RelationAction)
+	appRouter.GET("/relation/follow/list/",mw.JwtMiddleware.MiddlewareFunc(), handler.FollowList)
+	appRouter.GET("/relation/follower/list/",mw.JwtMiddleware.MiddlewareFunc(), handler.FollowerList)
+	appRouter.GET("/relation/friend/list/",mw.JwtMiddleware.MiddlewareFunc(), handler.FriendList)
+	appRouter.GET("/message/chat/",mw.JwtMiddleware.MiddlewareFunc(), handler.MessageChat)
+	appRouter.POST("/message/action/",mw.JwtMiddleware.MiddlewareFunc(), handler.MessageAction)
 }

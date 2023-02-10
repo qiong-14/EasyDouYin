@@ -7,6 +7,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/service"
+	"github.com/qiong-14/EasyDouYin/mw"
 	minioUtils "github.com/qiong-14/EasyDouYin/utils/minio"
 )
 
@@ -14,6 +15,7 @@ func main() {
 	go service.RunMessageServer()
 	dal.Init()
 	minioUtils.Init(context.Background())
+	mw.InitJwt()
 	h := server.Default(server.WithHostPorts("0.0.0.0:8080"))
 	register(h)
 	h.Spin()

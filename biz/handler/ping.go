@@ -4,15 +4,19 @@ package handler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/qiong-14/EasyDouYin/mw"
+	"github.com/qiong-14/EasyDouYin/dal"
 )
 
 // Ping .
 func Ping(ctx context.Context, c *app.RequestContext) {
-	c.JSON(consts.StatusOK, utils.H{
-		"message": "pong",
+	user, _ := c.Get(mw.IdentityKey)
+	c.JSON(200, utils.H{
+		"message": fmt.Sprintf("username:%v", user.(*dal.User).Name),
 	})
 }
+

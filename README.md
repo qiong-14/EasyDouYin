@@ -23,6 +23,7 @@ make all
 
 ### 用户注册
 基于Hertz.JWT鉴权的注册，注册后调用了mw.JwtMiddleware.LoginHandler进行登录
+[JWT认证 | CloudWeGo](https://www.cloudwego.io/zh/docs/hertz/tutorials/basic-feature/middleware/jwt/)
 ```shell
 curl --request POST 'http://localhost:8080/douyin/user/register/?username=704788475&password=111111'
 # {"status_code":1,"status_msg":"user already exits","token":""}

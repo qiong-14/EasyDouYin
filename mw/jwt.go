@@ -12,7 +12,6 @@ import (
 	
 	"net/http"
 	"time"
-	"errors"
 	"strings"
 	"encoding/base64"
 	"encoding/json"
@@ -33,6 +32,19 @@ import (
 		 MaxRefresh:    time.Hour,
 		 TokenLookup:   "header: Authorization, query: token, cookie: jwt",
 		 TokenHeadName: "Bearer",
+		 LoginResponse: func(ctx context.Context, c *app.RequestContext, code int, token string, expire time.Time) {
+			payloads := resp.Payload{}
+			json_payloads, _ := base64.RawURLEncoding.DecodeString(strings.Split(token, ".")[1])
+			err=json.Unmarshal(json_payloads, &payloads)
+			c.JSON(http.StatusOK, resp.UserLoginResponse{
+				Response: resp.Response{StatusCode: 0,StatusMsg:"login success" },
+				UserId:   payloads.Identity,
+				Token:    token,
+			})
+			if err!=nil{
+				panic(err)
+			}
+		 },
 		 Authenticator: func(ctx context.Context, c *app.RequestContext) (interface{}, error) {
 			 var loginStruct struct {
 				 Username  string `form:"username" json:"username" query:"username" vd:"(len($) > 0 && len($) < 30); msg:'Illegal format'"`
@@ -46,7 +58,10 @@ import (
 					return user,nil
 				}
 			 }else{
-				 return nil, errors.New("user already exists or wrong password")
+				c.JSON(http.StatusOK, resp.UserLoginResponse{
+					Response: resp.Response{StatusCode: 1,StatusMsg:"user does not exist or wrong password" },
+				})
+				 return nil, err
 			 }
 			 return nil, err
 		 },
@@ -54,30 +69,16 @@ import (
 		 IdentityHandler: func(ctx context.Context, c *app.RequestContext) interface{} {
 			 claims := jwt.ExtractClaims(ctx, c)
 			 return &dal.User{
-				Name: claims[IdentityKey].(string),
+				Id: int64(claims[IdentityKey].(float64)),
 			 }
 		 },
 		 PayloadFunc: func(data interface{}) jwt.MapClaims {
 			 if v, ok := data.(*dal.User); ok {
 				 return jwt.MapClaims{
-					 IdentityKey: v.Name,
+					 IdentityKey: v.Id,
 				 }
 			 }
 			 return jwt.MapClaims{}
-		 },
-		 LoginResponse: func(ctx context.Context, c *app.RequestContext, code int, token string, expire time.Time) {
-			payloads := resp.Payload{}
-			json_payloads, _ := base64.RawURLEncoding.DecodeString(strings.Split(token, ".")[1])
-			err=json.Unmarshal(json_payloads, &payloads)
-			u,_:=dal.GetUserByName(ctx,payloads.Identity)
-			c.JSON(http.StatusOK, resp.UserLoginResponse{
-				Response: resp.Response{StatusCode: 0,StatusMsg:"login success" },
-				UserId:   u.Id,
-				Token:    token,
-			})
-			if err!=nil{
-				panic(err)
-			}
 		 },
 		 HTTPStatusMessageFunc: func(e error, ctx context.Context, c *app.RequestContext) string {
 			 hlog.CtxErrorf(ctx, "jwt biz err = %+v", e.Error())

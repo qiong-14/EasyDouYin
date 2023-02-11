@@ -34,7 +34,7 @@ curl --request POST 'http://localhost:8080/douyin/user/register/?username=readyg
 ### 用户登录
 ```shell
 curl --request POST 'http://localhost:8080/douyin/user/login/?username=readygo11&password=111111'
-# {"code":401,"message":"user already exists or wrong password"}
+# {"status_code":1,"status_msg":"user does not exist or wrong password","token":""}
 
  curl --request POST 'http://localhost:8080/douyin/user/login/?username=readygo&password=111111'
 # {"status_code":0,"status_msg":"login success","user_id":10,"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzYwNDU1ODYsImlkZW50aXR5IjoicmVhZHlnbyIsIm9yaWdfaWF0IjoxNjc2MDQxOTg2fQ.BIMU_OS2CLrmmN1vrW0XWkFwaPPu5gPtViBAnw-lXK4"}
@@ -42,6 +42,8 @@ curl --request POST 'http://localhost:8080/douyin/user/login/?username=readygo11
 
 ### 鉴权后的ping
 ```shell
+curl --location --request GET 'localhost:8080/douyin/ping' --header 'Authorization: Bearer ($token)'
+例：
 curl --location --request GET 'localhost:8080/douyin/ping' --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzYwNDU1ODYsImlkZW50aXR5IjoicmVhZHlnbyIsIm9yaWdfaWF0IjoxNjc2MDQxOTg2fQ.BIMU_OS2CLrmmN1vrW0XWkFwaPPu5gPtViBAnw-lXK4'
-# {"message":"username:readygo"}
+# {"message":"user_id:4"}
 ```

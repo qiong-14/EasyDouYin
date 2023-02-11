@@ -16,7 +16,7 @@ import (
 func Ping(ctx context.Context, c *app.RequestContext) {
 	user, _ := c.Get(mw.IdentityKey)
 	c.JSON(200, utils.H{
-		"message": fmt.Sprintf("username:%v", user.(*dal.User).Name),
+		"message": fmt.Sprintf("user_id:%v", user.(*dal.User).Id),
 	})
 }
 

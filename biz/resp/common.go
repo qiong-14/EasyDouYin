@@ -60,6 +60,6 @@ type UserResponse struct {
 
 type Payload struct {
 	Exp      int    `json:"exp"`
-	Identity string `json:"identity"`
+	Identity int64   `json:"identity"`
 	OrigIat  int    `json:"orig_iat"`
 }

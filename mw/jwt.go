@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/hertz-contrib/jwt"
 	utils2 "github.com/qiong-14/EasyDouYin/utils"
 	"github.com/qiong-14/EasyDouYin/dal"
@@ -53,15 +52,9 @@ import (
 			 if err := c.BindAndValidate(&loginStruct); err != nil {
 				 return nil, err
 			 }
-			 if user, err := dal.GetUserByName(ctx, loginStruct.Username); err == nil {
-				if utils2.Encoder(loginStruct.Password) == user.Password{
-					return user,nil
-				}
-			 }else{
-				c.JSON(http.StatusOK, resp.UserLoginResponse{
-					Response: resp.Response{StatusCode: 1,StatusMsg:"user does not exist or wrong password" },
-				})
-				 return nil, err
+			 user, err := dal.GetUserByName(ctx, loginStruct.Username)
+			 if utils2.Encoder(loginStruct.Password) == user.Password{
+				return user,nil
 			 }
 			 return nil, err
 		 },
@@ -85,10 +78,9 @@ import (
 			 return e.Error()
 		 },
 		 Unauthorized: func(ctx context.Context, c *app.RequestContext, code int, message string) {
-			 c.JSON(http.StatusOK, utils.H{
-				 "code":    code,
-				 "message": message,
-			 })
+			 c.JSON(http.StatusOK, resp.UserLoginResponse{
+				Response: resp.Response{StatusCode: int32(code),StatusMsg:message},
+			})
 		 },
 	 })
 	 if err != nil {

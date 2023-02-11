@@ -34,7 +34,7 @@ curl --request POST 'http://localhost:8080/douyin/user/register/?username=readyg
 ### 用户登录
 ```shell
 curl --request POST 'http://localhost:8080/douyin/user/login/?username=readygo11&password=111111'
-# {"status_code":1,"status_msg":"user does not exist or wrong password","token":""}
+# {"status_code":401,"status_msg":"record not found","token":""}
 
  curl --request POST 'http://localhost:8080/douyin/user/login/?username=readygo&password=111111'
 # {"status_code":0,"status_msg":"login success","user_id":10,"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzYwNDU1ODYsImlkZW50aXR5IjoicmVhZHlnbyIsIm9yaWdfaWF0IjoxNjc2MDQxOTg2fQ.BIMU_OS2CLrmmN1vrW0XWkFwaPPu5gPtViBAnw-lXK4"}

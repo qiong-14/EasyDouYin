@@ -18,7 +18,7 @@ docker-compose up
 source dy_secure_config.sh
 ```
 * windows 必须要用**cmd终端**，运行以下bat程序
-```cmd
+```shell
 dy_secure_config.bat
 ```
 ### 视频推流的实现

@@ -1,37 +1,36 @@
-drop table if exists user_relation;
-drop table if exists videos;
+drop table if exists `follow`;
+drop table if exists `videos`;
 drop table if exists `user`;
 -- 用户表 users --
 create table if not exists `user`
 (
-    `id`         bigint       not null auto_increment comment 'PK',
-    `name`       varchar(128) not null default '' comment 'UserName',
-    `password`   varchar(128) not null default '' comment 'UserPassword',
-    `created_at` timestamp    not null default current_timestamp comment 'User account create time',
-    `updated_at` timestamp    not null default current_timestamp on update current_timestamp comment 'User account update time',
-    `deleted_at` timestamp    null     default null comment 'User account delete time',
+    `id`         BIGINT       NOT NULL AUTO_INCREMENT COMMENT 'PK',
+    `name`       VARCHAR(128) NOT NULL DEFAULT '' COMMENT 'UserName',
+    `password`   VARCHAR(128) NOT NULL DEFAULT '' COMMENT 'UserPassword',
+    `created_at` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'User account create time',
+    `updated_at` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'User account update time',
+    `deleted_at` TIMESTAMP    NULL     DEFAULT NULL COMMENT 'User account delete time',
     primary key (`id`),
     key `name_password_idx` (`name`, `password`)
-) engine = InnoDB
-  default charset = utf8mb4
-  collate = utf8mb4_general_ci comment ='User table';
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci COMMENT ='User table';
 
-create table if not exists user_relation
+create table if not exists `follow`
 (
-    `id`              bigint primary key auto_increment comment '用户ID',
-    `created_at`      timestamp not null default current_timestamp comment 'User account create time',
-    `updated_at`      timestamp not null default current_timestamp on update current_timestamp comment 'User account update time',
-    `deleted_at`      timestamp null     default null comment 'User account delete time',
-    `followers_count` int comment '粉丝列表人数',
-    `follows_count`   int comment '关注列表人数',
-    `likes_videos`    longtext comment '喜欢的视频列表',
-    `followers`       longtext comment '粉丝列表, JSON表示',
-    `follows`         longtext comment '关注列表, JSON表示'
+    `id`              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+    `user_id`         BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
+    `follow_id`       BIGINT UNSIGNED NOT NULL COMMENT '被关注的用户ID',
+    `cancel`          TINYINT COMMENT '是否关注',
+    `created_at` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_at` TIMESTAMP    NULL     DEFAULT NULL,
+    primary key (`id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci COMMENT ='关注表';
 
-) comment '用户社交信息表';
-
-
-create table if not exists videos
+create table if not exists `videos`
 (
     `id`              bigint primary key auto_increment comment '视频ID',
     `created_at`      timestamp not null default current_timestamp comment 'User account create time',

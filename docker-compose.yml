@@ -27,3 +27,11 @@ services:
       - MYSQL_USER=readygo
       - MYSQL_PASSWORD=123456
       - MYSQL_RANDOM_ROOT_PASSWORD="yes"
+
+  redis:
+    image: 'redis:latest'
+    volumes:
+      - ./redis.conf:/etc/redis/redis.conf
+    ports:
+      - 6379:6379
+

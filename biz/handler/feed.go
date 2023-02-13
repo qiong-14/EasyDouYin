@@ -9,7 +9,6 @@ import (
 	"github.com/qiong-14/EasyDouYin/dal"
 	minioUtils "github.com/qiong-14/EasyDouYin/mw"
 	"github.com/qiong-14/EasyDouYin/pkg/constants"
-	"math/rand"
 	"time"
 )
 
@@ -27,17 +26,9 @@ func GetVideoStream(ctx context.Context, lastTime int64, limit int) []resp.Video
 		userInfo, _ := dal.GetUserById(context.Background(), id)
 		playUrl, coverUrl, _ := minioUtils.GetUrlOfVideoAndCover(context.Background(),
 			info.Title, time.Hour)
-		//fmt.Println(playUrl.String())
-		//fmt.Println("cover", coverUrl.String())
 		video := &resp.Video{
-			Id: id,
-			Author: resp.User{
-				Id:            userInfo.Id,
-				Name:          userInfo.Name,
-				FollowCount:   int64(rand.Intn(1999)), // 随机给的
-				FollowerCount: int64(rand.Intn(1000)),
-				IsFollow:      false,
-			},
+			Id:            id,
+			Author:        dal.GetRespUser(ctx, userInfo.Id),
 			PlayUrl:       playUrl.String(),
 			CoverUrl:      coverUrl.String(),
 			FavoriteCount: 0,

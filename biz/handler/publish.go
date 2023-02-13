@@ -8,6 +8,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
+	"github.com/qiong-14/EasyDouYin/mw"
 	"path/filepath"
 )
 
@@ -18,8 +19,8 @@ type VideoListResponse struct {
 
 // Publish check token then save upload file to public directory
 func Publish(ctx context.Context, c *app.RequestContext) {
-	userId, _ := c.Get("user_id")
-	user, err := dal.GetUserById(ctx, userId.(int64))
+	u, _ := c.Get(mw.IdentityKey)
+	user, err := dal.GetUserById(ctx, u.(*dal.User).Id)
 	if err == nil {
 		c.JSON(consts.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 		return

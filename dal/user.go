@@ -2,6 +2,7 @@ package dal
 
 import (
 	"context"
+	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/pkg/constants"
 	"gorm.io/gorm"
 )
@@ -49,4 +50,17 @@ func GetUserByName(ctx context.Context, name string) (*User, error) {
 		return u, err
 	}
 	return u, nil
+}
+
+func GetRespUser(ctx context.Context, id int64) resp.User {
+	followCount, _ := GetFollowCnt(ctx, id)
+	fansCount, _ := GetFansCnt(ctx, id)
+	user, _ := GetUserById(ctx, id)
+	return resp.User{
+		Id:            user.Id,
+		Name:          user.Name,
+		FollowCount:   followCount,
+		FollowerCount: fansCount,
+		IsFollow:      false,
+	}
 }

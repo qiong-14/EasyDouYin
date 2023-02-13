@@ -57,11 +57,16 @@ func Register(ctx context.Context, c *app.RequestContext) {
 func UserInfo(ctx context.Context, c *app.RequestContext) {
 	id, _ := strconv.ParseInt(c.Query("user_id"), 10, 64)
 	if user, err := dal.GetUserById(ctx, id); err == nil {
+		followCount, _ := dal.GetFollowCnt(ctx, user.Id)
+		fansCount, _ := dal.GetFansCnt(ctx, user.Id)
 		c.JSON(http.StatusOK, resp.UserResponse{
 			Response: resp.Response{StatusCode: 0},
 			User: resp.User{
-				Id:   user.Id,
-				Name: user.Name,
+				Id:            user.Id,
+				Name:          user.Name,
+				FollowCount:   followCount,
+				FollowerCount: fansCount,
+				IsFollow:      true,
 			},
 		})
 	} else {

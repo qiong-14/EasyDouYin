@@ -21,7 +21,7 @@ var (
 
 func Init(ctx context.Context) {
 	// Initialize minio client object.
-	log.Println("minio初始化")
+	log.Println("minio初始化 Addr:", endpoint)
 	minioClient, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: false,

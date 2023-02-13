@@ -10,7 +10,14 @@ docker-compose up
 ```shell
 source dy_secure_config.sh
 ```
+* windows 必须要用**cmd终端**，运行以下bat程序
+```shell
+dy_secure_config.bat
+```
 ### 视频推流的实现
+
+**启动docker后运行一次即可**
+
 基于`minio`和`redis`,我们用单元测试的方式插入一些基础数据, **执行之前, 请按照群里的要求配置好环境变量**
 
 ```shell

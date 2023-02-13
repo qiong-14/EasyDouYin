@@ -100,7 +100,7 @@ func GetFollowList(ctx context.Context, userId int64) (idx []int64, err error) {
 	if err = DB.
 		WithContext(ctx).
 		Model(&Follow{}).
-		Where("user_id = ?", userId).
+		Where("user_id = ? AND cancel = ? ", userId, 0).
 		Pluck("follow_id", &idx).Error; err != nil {
 		if err.Error() == "record not found" {
 			return nil, nil

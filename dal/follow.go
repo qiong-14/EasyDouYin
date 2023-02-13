@@ -9,10 +9,9 @@ import (
 
 type Follow struct {
 	gorm.Model
-	Id         int64 `gorm:"primary_key"`
-	UserId     int64 `json:"user_id"`
-	FollowerId int64 `json:"follow_id"`
-	Cancel     int8  `json:"cancel"`
+	UserId   int64 `gorm:"user_id"`
+	FollowId int64 `json:"follow_id"`
+	Cancel   int8  `json:"cancel"`
 }
 
 func (f Follow) TableName() string {
@@ -23,8 +22,8 @@ func FindRelation(ctx context.Context, userId, followId int64) (follow *Follow, 
 	if err = DB.
 		WithContext(ctx).
 		Model(&Follow{}).
-		Where("user_id = ? AND follow_id = ? AND cancel = ?", userId, followId, 0).
-		Take(follow).Error; err != nil {
+		Where("user_id = ? AND follow_id = ?", userId, followId).
+		Take(&follow).Error; err != nil {
 		log.Println(err.Error())
 		return nil, err
 	}
@@ -58,7 +57,7 @@ func GetFollowCnt(ctx context.Context, userId int64) (cnt int64, err error) {
 }
 
 func CreateFollow(ctx context.Context, userId, followId int64, cancel int8) (err error) {
-	follow := Follow{UserId: userId, FollowerId: followId, Cancel: cancel}
+	follow := Follow{UserId: userId, FollowId: followId, Cancel: cancel}
 	if err = DB.
 		WithContext(ctx).
 		Model(&Follow{}).
@@ -106,7 +105,7 @@ func GetFollowList(ctx context.Context, userId int64) (idx []int64, err error) {
 		if err.Error() == "record not found" {
 			return nil, nil
 		}
-		log.Println(err.Error())
+		log.Println("关注列表为空", err.Error())
 		return nil, err
 	}
 	return
@@ -122,7 +121,7 @@ func GetFansList(ctx context.Context, userId int64) (idx []int64, err error) {
 		if err.Error() == "record not found" {
 			return nil, nil
 		}
-		log.Println(err.Error())
+		log.Println("粉丝列表为空", err.Error())
 		return nil, err
 	}
 	return

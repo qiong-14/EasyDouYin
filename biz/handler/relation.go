@@ -7,6 +7,7 @@ import (
 	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/mw"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -42,17 +43,20 @@ func RelationAction(ctx context.Context, c *app.RequestContext) {
 	ActionType, _ := strconv.Atoi(c.Query("action_type"))
 	cancel := int8(ActionType - 1)
 	if _, err := dal.FindRelation(ctx, id1, id2); err == nil {
+		log.Println("找到用户的关注记录，开始更新关注记录")
 		if err2 := dal.UpdateRelation(ctx, id1, id2, cancel); err2 == nil {
 			c.JSON(http.StatusOK, resp.Response{
 				StatusCode: 0,
 			})
 		} else {
+
 			c.JSON(http.StatusOK, resp.Response{
 				StatusCode: 1,
 				StatusMsg:  "更新关注失败",
 			})
 		}
 	} else {
+		log.Println("没有找到用户的关注记录，开始创建关注记录")
 		if err2 := dal.CreateFollow(ctx, id1, id2, cancel); err2 == nil {
 			c.JSON(http.StatusOK, resp.Response{
 				StatusCode: 0,

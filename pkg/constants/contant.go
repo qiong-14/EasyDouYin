@@ -26,8 +26,9 @@ var (
 
 const (
 	// UserTableName mysql table name
-	UserTableName   = "user"
-	FollowTableName = "follow"
-	VideoTableName  = "videos"
-	FeedVideosCount = 20
+	UserTableName    = "user"
+	FollowTableName  = "follow"
+	VideoTableName   = "videos"
+	MessageTableName = "message"
+	FeedVideosCount  = 20
 )

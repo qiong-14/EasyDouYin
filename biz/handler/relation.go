@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"sync"
 )
 
 type UserListResponse struct {
@@ -17,10 +18,21 @@ type UserListResponse struct {
 	UserList []resp.User `json:"user_list"`
 }
 
+type FriendUser struct {
+	resp.User
+	message string `json:"message,omitempty"`
+	msgType int64  `json:msg_type`
+}
+
 // RelationAction no practical effect, just check if token is valid
 func RelationAction(ctx context.Context, c *app.RequestContext) {
+	defer hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
+		c.Response.StatusCode(),
+		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
+
 	u, _ := c.Get(mw.IdentityKey)
 	id1 := u.(*dal.User).Id
+
 	if _, err := dal.GetUserById(ctx, id1); err != nil {
 		c.JSON(http.StatusOK, resp.Response{
 			StatusCode: 1,
@@ -39,43 +51,42 @@ func RelationAction(ctx context.Context, c *app.RequestContext) {
 		})
 		return
 	}
-	// 1-关注 2-取消关注 => 0-关注 1-取消关注
+
 	ActionType, _ := strconv.Atoi(c.Query("action_type"))
-	cancel := int8(ActionType - 1)
-	if _, err := dal.FindRelation(ctx, id1, id2); err == nil {
-		log.Println("找到用户的关注记录，开始更新关注记录")
-		if err2 := dal.UpdateRelation(ctx, id1, id2, cancel); err2 == nil {
-			c.JSON(http.StatusOK, resp.Response{
-				StatusCode: 0,
-			})
-		} else {
 
-			c.JSON(http.StatusOK, resp.Response{
-				StatusCode: 1,
-				StatusMsg:  "更新关注失败",
-			})
+	// 	关注操作： 1-关注 2-取消关注
+	if ActionType == 1 {
+		// 若没有记录创建记录
+		if find, _ := dal.FindRelation(ctx, id1, id2); !find {
+			dal.CreateRelation(ctx, id1, id2)
 		}
+		c.JSON(http.StatusOK, resp.Response{
+			StatusCode: 0,
+			StatusMsg:  "关注成功",
+		})
+	} else if ActionType == 2 {
+		// 若有记录删除记录
+		if find, _ := dal.FindRelation(ctx, id1, id2); find {
+			dal.DeleteRelation(ctx, id1, id2)
+		}
+		c.JSON(http.StatusOK, resp.Response{
+			StatusCode: 0,
+			StatusMsg:  "取消关注成功",
+		})
 	} else {
-		log.Println("没有找到用户的关注记录，开始创建关注记录")
-		if err2 := dal.CreateFollow(ctx, id1, id2, cancel); err2 == nil {
-			c.JSON(http.StatusOK, resp.Response{
-				StatusCode: 0,
-			})
-		} else {
-			c.JSON(http.StatusOK, resp.Response{
-				StatusCode: 1,
-				StatusMsg:  "创建关注失败",
-			})
-		}
+		log.Printf("无效操作")
+		c.JSON(http.StatusOK, resp.Response{
+			StatusCode: 1,
+			StatusMsg:  "无效的关注操作",
+		})
 	}
-
-	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
-		c.Response.StatusCode(),
-		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 }
 
-// FollowList all users have same follow list
+// FollowList 得到用户的关注列表
 func FollowList(ctx context.Context, c *app.RequestContext) {
+	defer hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
+		c.Response.StatusCode(),
+		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 
 	ids := c.Query("user_id")
 	id, _ := strconv.ParseInt(ids, 10, 64)
@@ -88,56 +99,110 @@ func FollowList(ctx context.Context, c *app.RequestContext) {
 		})
 		return
 	}
-
-	if userIdx, err := dal.GetFollowList(ctx, id); err != nil {
-		c.JSON(http.StatusOK, UserListResponse{
-			Response: resp.Response{
-				StatusCode: 1,
-				StatusMsg:  "获取关注列表错误",
-			},
-		})
-		return
-	} else {
-		var followList []resp.User
-		for _, i := range userIdx {
-			follow := dal.GetRespUser(ctx, i)
+	userIdx, _ := dal.GetFollowList(ctx, id)
+	followList := make([]resp.User, len(userIdx))
+	var wg sync.WaitGroup
+	wg.Add(len(userIdx))
+	// 可以用goroutine获取用户的关注者信息
+	for i, f := range userIdx {
+		go func(j int, id int64) {
+			defer wg.Done()
+			follow := dal.GetRespUser(ctx, id)
 			follow.IsFollow = true
-			followList = append(followList, follow)
-		}
-		c.JSON(http.StatusOK, UserListResponse{
-			Response: resp.Response{
-				StatusCode: 0,
-			},
-			UserList: followList,
-		})
+			followList[j] = follow
+		}(i, f)
 	}
-	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
-		c.Response.StatusCode(),
-		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
-}
-
-// FollowerList all users have same follower list
-func FollowerList(ctx context.Context, c *app.RequestContext) {
+	wg.Wait()
 	c.JSON(http.StatusOK, UserListResponse{
 		Response: resp.Response{
 			StatusCode: 0,
 		},
-		UserList: []resp.User{DemoUser},
+		UserList: followList,
 	})
-	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
+
+}
+
+// FollowerList 获取粉丝列表
+func FollowerList(ctx context.Context, c *app.RequestContext) {
+	defer hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
 		c.Response.StatusCode(),
 		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
+
+	ids := c.Query("user_id")
+	id, _ := strconv.ParseInt(ids, 10, 64)
+	if _, err := dal.GetUserById(ctx, id); err != nil {
+		c.JSON(http.StatusOK, UserListResponse{
+			Response: resp.Response{
+				StatusCode: 1,
+				StatusMsg:  "用户不存在",
+			},
+		})
+		return
+	}
+	userIdx, _ := dal.GetFansList(ctx, id)
+	fansList := make([]resp.User, len(userIdx))
+	var wg sync.WaitGroup
+	wg.Add(len(userIdx))
+	for i, f := range userIdx {
+		// 采用goroutine获取粉丝信息
+		go func(j int, fansId int64) {
+			defer wg.Done()
+			fan := dal.GetRespUser(ctx, fansId)
+			// 查找该用户是否关注了粉丝 找到为真，默认为假
+			if y, _ := dal.FindRelation(ctx, id, fansId); y {
+				fan.IsFollow = true
+			}
+			fansList[j] = fan
+		}(i, f)
+	}
+	wg.Wait()
+	c.JSON(http.StatusOK, UserListResponse{
+		Response: resp.Response{
+			StatusCode: 0,
+		},
+		UserList: fansList,
+	})
+
 }
 
 // FriendList all users have same friend list
 func FriendList(ctx context.Context, c *app.RequestContext) {
+	defer hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
+		c.Response.StatusCode(),
+		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
+
+	ids := c.Query("user_id")
+	id, _ := strconv.ParseInt(ids, 10, 64)
+	if _, err := dal.GetUserById(ctx, id); err != nil {
+		c.JSON(http.StatusOK, UserListResponse{
+			Response: resp.Response{
+				StatusCode: 1,
+				StatusMsg:  "用户不存在",
+			},
+		})
+		return
+	}
+	userIdx, _ := dal.GetFansList(ctx, id)
+	fansList := make([]resp.User, len(userIdx))
+	var wg sync.WaitGroup
+	wg.Add(len(userIdx))
+	for i, f := range userIdx {
+		// 采用goroutine获取粉丝信息
+		go func(j int, fansId int64) {
+			defer wg.Done()
+			fan := dal.GetRespUser(ctx, fansId)
+			// 查找该用户是否关注了粉丝 找到为真，默认为假
+			if y, _ := dal.FindRelation(ctx, id, fansId); y {
+				fan.IsFollow = true
+			}
+			fansList[j] = fan
+		}(i, f)
+	}
+	wg.Wait()
 	c.JSON(http.StatusOK, UserListResponse{
 		Response: resp.Response{
 			StatusCode: 0,
 		},
-		UserList: []resp.User{DemoUser},
+		UserList: fansList,
 	})
-	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
-		c.Response.StatusCode(),
-		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 }

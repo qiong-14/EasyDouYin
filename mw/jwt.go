@@ -35,7 +35,7 @@ func InitJwt() {
 			json_payloads, _ := base64.RawURLEncoding.DecodeString(strings.Split(token, ".")[1])
 			err = json.Unmarshal(json_payloads, &payloads)
 			c.JSON(http.StatusOK, resp.UserLoginResponse{
-				Response: resp.Response{StatusCode: 0, StatusMsg: "login success"},
+				Response: resp.Response{StatusCode: 0, StatusMsg: "登录成功"},
 				UserId:   payloads.Identity,
 				Token:    token,
 			})

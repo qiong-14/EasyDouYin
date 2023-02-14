@@ -6,7 +6,9 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
+	"github.com/qiong-14/EasyDouYin/mw"
 	"net/http"
+	"time"
 )
 
 type CommentListResponse struct {
@@ -21,26 +23,21 @@ type CommentActionResponse struct {
 
 // CommentAction no practical effect, just check if token is valid
 func CommentAction(ctx context.Context, c *app.RequestContext) {
-	userId, _ := c.Get("user_id")
-	userIdA, _ := userId.(int64)
+	defer hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
+		c.Response.StatusCode(),
+		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 
+	u, _ := c.Get(mw.IdentityKey)
 	actionType := c.Query("action_type")
-
-	if user, err := dal.GetUserById(ctx, userIdA); err == nil {
+	if user, err := dal.GetUserById(ctx, u.(*dal.User).Id); err == nil {
 		if actionType == "1" {
 			text := c.Query("comment_text")
 			c.JSON(http.StatusOK, CommentActionResponse{Response: resp.Response{StatusCode: 0},
 				Comment: resp.Comment{
-					Id: 1,
-					User: resp.User{
-						Id:            user.Id,
-						Name:          user.Name,
-						FollowCount:   100,
-						FollowerCount: 101,
-						IsFollow:      true,
-					},
+					Id:         1,
+					User:       dal.GetRespUser(ctx, user.Id),
 					Content:    text,
-					CreateDate: "05-01",
+					CreateDate: time.Now().String(),
 				}})
 			return
 		}
@@ -48,9 +45,7 @@ func CommentAction(ctx context.Context, c *app.RequestContext) {
 	} else {
 		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 	}
-	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
-		c.Response.StatusCode(),
-		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
+
 }
 
 // CommentList all videos have same demo comment list

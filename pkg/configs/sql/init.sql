@@ -1,6 +1,7 @@
 drop table if exists `follow`;
 drop table if exists `videos`;
 drop table if exists `user`;
+drop table if exists `message`;
 -- 用户表 users --
 create table if not exists `user`
 (
@@ -20,15 +21,24 @@ create table if not exists `follow`
 (
     `id`              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键',
     `user_id`         BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
-    `follow_id`       BIGINT UNSIGNED NOT NULL COMMENT '被关注的用户ID',
-    `cancel`          TINYINT COMMENT '是否关注',
-    `created_at` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    `deleted_at` TIMESTAMP    NULL     DEFAULT NULL,
-    primary key (`id`)
+    `follow_id`       BIGINT UNSIGNED NOT NULL COMMENT '关注的用户ID',
+     primary key (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_general_ci COMMENT ='关注表';
+  COLLATE = utf8mb4_general_ci COMMENT ='关注表 user_id 关注了 follow_id';
+
+create table if not exists `message`
+(
+    `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '消息id',
+    `to_user_id `   BIGINT UNSIGNED NOT NULL COMMENT '接收者的id',
+    `from_user_id ` BIGINT UNSIGNED NOT NULL COMMENT '该发送者的id',
+    `content`       LONGTEXT NOT NULL COMMENT '消息内容',
+    `created_at`    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    primary key (`id`)
+)ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci COMMENT ='消息表';
+
 
 create table if not exists `videos`
 (

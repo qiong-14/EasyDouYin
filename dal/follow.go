@@ -3,39 +3,39 @@ package dal
 import (
 	"context"
 	"github.com/qiong-14/EasyDouYin/pkg/constants"
-	"gorm.io/gorm"
 	"log"
 )
 
 type Follow struct {
-	gorm.Model
-	UserId   int64 `gorm:"user_id"`
-	FollowId int64 `json:"follow_id"`
-	Cancel   int8  `json:"cancel"`
+	Id       int64 `json:"id" gorm:"primary_key"`
+	UserId   int64 `json:"user_id" gorm:"colum:user_id"`
+	FollowId int64 `json:"follow_id" gorm:"follow_id"`
 }
 
+// TableName follow
 func (f Follow) TableName() string {
 	return constants.FollowTableName
 }
 
-func FindRelation(ctx context.Context, userId, followId int64) (follow *Follow, err error) {
+// FindRelation 是否有过关注记录
+func FindRelation(ctx context.Context, userId, followId int64) (y bool, err error) {
 	if err = DB.
 		WithContext(ctx).
 		Model(&Follow{}).
-		Where("user_id = ? AND follow_id = ?", userId, followId).
-		Take(&follow).Error; err != nil {
+		Where(&Follow{UserId: userId, FollowId: followId}).
+		First(&Follow{}).Error; err != nil {
 		log.Println(err.Error())
-		return nil, err
+		return false, err
 	}
-	return
+	return true, nil
 }
 
-// GetFansCnt 获取粉丝
-func GetFansCnt(ctx context.Context, userId int64) (cnt int64, err error) {
+// GetFansCnt 获取粉丝数目
+func GetFansCnt(ctx context.Context, followId int64) (cnt int64, err error) {
 	if err = DB.
 		WithContext(ctx).
 		Model(&Follow{}).
-		Where("follow_id = ? AND cancel = ?", userId, 0).
+		Where(&Follow{FollowId: followId}).
 		Count(&cnt).Error; nil != err {
 		log.Println(err.Error())
 		return 0, err
@@ -43,12 +43,12 @@ func GetFansCnt(ctx context.Context, userId int64) (cnt int64, err error) {
 	return
 }
 
-// GetFollowCnt 获取关注的人的数目
+// GetFollowCnt 获取关注数目
 func GetFollowCnt(ctx context.Context, userId int64) (cnt int64, err error) {
 	if err = DB.
 		WithContext(ctx).
 		Model(&Follow{}).
-		Where("user_id = ? AND cancel = ?", userId, 0).
+		Where(&Follow{UserId: userId}, userId).
 		Count(&cnt).Error; nil != err {
 		log.Println(err.Error())
 		return 0, err
@@ -56,8 +56,9 @@ func GetFollowCnt(ctx context.Context, userId int64) (cnt int64, err error) {
 	return
 }
 
-func CreateFollow(ctx context.Context, userId, followId int64, cancel int8) (err error) {
-	follow := Follow{UserId: userId, FollowId: followId, Cancel: cancel}
+// CreateRelation 创建关注记录
+func CreateRelation(ctx context.Context, userId, followId int64) (err error) {
+	follow := Follow{UserId: userId, FollowId: followId}
 	if err = DB.
 		WithContext(ctx).
 		Model(&Follow{}).
@@ -68,27 +69,13 @@ func CreateFollow(ctx context.Context, userId, followId int64, cancel int8) (err
 	return nil
 }
 
-func IsFollowed(ctx context.Context, userId, followId int64) (follow *Follow, err error) {
+// DeleteRelation 删除关注记录
+func DeleteRelation(ctx context.Context, userId, followId int64) (err error) {
 	if err = DB.
 		WithContext(ctx).
 		Model(&Follow{}).
-		Where("user_id = ? AND follow_id = ?", userId, followId).
-		Take(&follow).Error; nil != err {
-		if err.Error() == "record not found" {
-			return nil, nil
-		}
-		log.Println(err.Error())
-		return nil, err
-	}
-	return
-}
-
-func UpdateRelation(ctx context.Context, userId, followId int64, cancel int8) (err error) {
-	if err = DB.
-		WithContext(ctx).
-		Model(&Follow{}).
-		Where("user_id = ? AND follow_id = ?", userId, followId).
-		Update("cancel", cancel).Error; err != nil {
+		Where(&Follow{UserId: userId, FollowId: followId}).
+		Delete(&Follow{}).Error; err != nil {
 		log.Println(err.Error())
 		return err
 	}
@@ -100,23 +87,23 @@ func GetFollowList(ctx context.Context, userId int64) (idx []int64, err error) {
 	if err = DB.
 		WithContext(ctx).
 		Model(&Follow{}).
-		Where("user_id = ? AND cancel = ? ", userId, 0).
+		Where(&Follow{UserId: userId}).
 		Pluck("follow_id", &idx).Error; err != nil {
 		if err.Error() == "record not found" {
 			return nil, nil
 		}
-		log.Println("关注列表为空", err.Error())
+		log.Println("关注列表为空：", err.Error())
 		return nil, err
 	}
 	return
 }
 
 // GetFansList 得到用户的粉丝列表
-func GetFansList(ctx context.Context, userId int64) (idx []int64, err error) {
+func GetFansList(ctx context.Context, followId int64) (idx []int64, err error) {
 	if err = DB.
 		WithContext(ctx).
 		Model(&Follow{}).
-		Where("follow_id = ?", userId).
+		Where(&Follow{FollowId: followId}).
 		Pluck("user_id", &idx).Error; err != nil {
 		if err.Error() == "record not found" {
 			return nil, nil

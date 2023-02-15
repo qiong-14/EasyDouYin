@@ -3,7 +3,7 @@ package dal
 import (
 	"context"
 	"fmt"
-	"github.com/qiong-14/EasyDouYin/pkg/constants"
+	"github.com/qiong-14/EasyDouYin/constants"
 	"gorm.io/gorm"
 	"os"
 	"time"

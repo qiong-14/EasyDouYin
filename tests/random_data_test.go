@@ -7,7 +7,7 @@ import (
 	"github.com/henrylee2cn/goutil"
 	"github.com/minio/minio-go/v7"
 	"github.com/qiong-14/EasyDouYin/dal"
-	minioUtils "github.com/qiong-14/EasyDouYin/utils/minio"
+	minioUtils "github.com/qiong-14/EasyDouYin/middleware"
 	"math"
 	"math/rand"
 	"os"
@@ -73,5 +73,3 @@ func TestVideoInsert(t *testing.T) {
 		}
 	}, math.MaxUint32)
 }
-
-

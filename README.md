@@ -1,5 +1,30 @@
 # EasyDouYin
 
+### 目录结构
+
+```
+EasyDouyin 
+├── /biz/ 路由相关
+|   ├── /handler/ 路由处理函数
+|   ├── /resp/    响应结构体
+|   ├── /router/  路由注册
+├── /configs/ 配置文件
+├── /constants/ 常量
+├── /dal/ 数据库操作
+├── /middleware/ 中间件相关
+│   ├── jwt/ 鉴权
+│   ├── minio/ 文件储存系统
+├── /service/ 服务层 (暂时用不上)
+├── /tools/ 公用函数
+├── .gitignore
+├── go.mod
+├── main.go
+├── README.md
+├── Makefile
+```
+
+
+
 ## 抖音项目运行步骤
 
 运行docker

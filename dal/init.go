@@ -1,7 +1,7 @@
 package dal
 
 import (
-	"github.com/qiong-14/EasyDouYin/pkg/constants"
+	"github.com/qiong-14/EasyDouYin/constants"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	gormopentracing "gorm.io/plugin/opentracing"

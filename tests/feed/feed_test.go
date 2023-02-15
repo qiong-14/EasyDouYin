@@ -5,7 +5,7 @@ import (
 	"fmt"
 	handler "github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
-	minioUtils "github.com/qiong-14/EasyDouYin/utils/minio"
+	minioUtils "github.com/qiong-14/EasyDouYin/middleware"
 	"math/rand"
 	"testing"
 	"time"

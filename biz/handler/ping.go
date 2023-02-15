@@ -8,15 +8,14 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
-	"github.com/qiong-14/EasyDouYin/mw"
 	"github.com/qiong-14/EasyDouYin/dal"
+	"github.com/qiong-14/EasyDouYin/middleware"
 )
 
 // Ping .
 func Ping(ctx context.Context, c *app.RequestContext) {
-	user, _ := c.Get(mw.IdentityKey)
+	user, _ := c.Get(middleware.IdentityKey)
 	c.JSON(200, utils.H{
 		"message": fmt.Sprintf("user_id:%v", user.(*dal.User).Id),
 	})
 }
-

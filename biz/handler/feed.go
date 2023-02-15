@@ -6,9 +6,9 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/qiong-14/EasyDouYin/biz/resp"
+	"github.com/qiong-14/EasyDouYin/constants"
 	"github.com/qiong-14/EasyDouYin/dal"
-	"github.com/qiong-14/EasyDouYin/pkg/constants"
-	minioUtils "github.com/qiong-14/EasyDouYin/utils/minio"
+	minioUtils "github.com/qiong-14/EasyDouYin/middleware"
 	"math/rand"
 	"time"
 )

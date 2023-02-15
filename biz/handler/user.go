@@ -7,8 +7,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
-	"github.com/qiong-14/EasyDouYin/mw"
-	"github.com/qiong-14/EasyDouYin/utils"
+	"github.com/qiong-14/EasyDouYin/middleware"
+	"github.com/qiong-14/EasyDouYin/tools"
 	"net/http"
 	"strconv"
 )
@@ -27,7 +27,6 @@ import (
 //}
 
 //var userIdSequence = int64(1)
-
 
 func Register(ctx context.Context, c *app.RequestContext) {
 	username := c.Query("username")
@@ -48,7 +47,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		})
 		return
 	}
-	mw.JwtMiddleware.LoginHandler(ctx,c)
+	middleware.JwtMiddleware.LoginHandler(ctx, c)
 
 	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
 		c.Response.StatusCode(),

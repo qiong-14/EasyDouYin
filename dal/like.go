@@ -11,7 +11,7 @@ type Like struct {
 	gorm.Model
 	UserId  int64 `json:"user_id" gorm:"user_id"`
 	VideoId int64 `json:"video_id" gorm:"video_id"`
-	Cancel  int64 `json:"cancel" gorm:"cancel"`
+	Cancel  int8  `json:"cancel" gorm:"cancel"`
 }
 
 func (L Like) TableName() string {
@@ -19,11 +19,11 @@ func (L Like) TableName() string {
 }
 
 // InsertLikeVideoInfo insert user like video info
-func InsertLikeVideoInfo(ctx context.Context, userId, videoId int64) error {
+func InsertLikeVideoInfo(ctx context.Context, userId, videoId int64, cancel int8) error {
 	if err := DB.
 		WithContext(ctx).
 		Model(&Like{}).
-		Create(&Like{UserId: userId, VideoId: videoId, Cancel: 1}).Error; err != nil {
+		Create(&Like{UserId: userId, VideoId: videoId, Cancel: cancel}).Error; err != nil {
 		log.Println("insert like video failed")
 		return err
 	}
@@ -31,13 +31,14 @@ func InsertLikeVideoInfo(ctx context.Context, userId, videoId int64) error {
 	return nil
 }
 
-// GetLikeVideoIdxList return video id lists user likes
+// GetLikeVideoIdxList return video id lists user likes by update time
 func GetLikeVideoIdxList(ctx context.Context, userId int64) ([]int64, error) {
 	var likeVideoIdxList []int64
 	if err := DB.
 		WithContext(ctx).
 		Model(&Like{}).
 		Where(&Like{UserId: userId, Cancel: 1}).
+		Order("updated_at").
 		Pluck("video_id", &likeVideoIdxList).Error; err != nil {
 		log.Println("get like video list failed")
 
@@ -47,22 +48,37 @@ func GetLikeVideoIdxList(ctx context.Context, userId int64) ([]int64, error) {
 	return likeVideoIdxList, nil
 }
 
+// GetLikeUserCount get the number of users who like the video
+func GetLikeUserCount(ctx context.Context, videoId int64) (int64, error) {
+	var cnt int64
+	if err := DB.
+		WithContext(ctx).
+		Model(&Like{}).
+		Where(&Like{VideoId: videoId, Cancel: 1}).
+		Distinct("user_id").
+		Count(&cnt).Error; err != nil {
+		log.Printf("no users like video %d", videoId)
+		return 0, err
+	}
+	log.Printf("get %d users like video %d", cnt, videoId)
+	return cnt, nil
+}
+
 // FindLikeVideoInfo find relation record if not find return nil
 func FindLikeVideoInfo(ctx context.Context, userId, videoId int64) (Like, error) {
 	var likeVideoInfo Like
-	err := DB.
+	if err := DB.
 		WithContext(ctx).
 		Model(&Like{}).
 		Where(&Like{UserId: userId, VideoId: videoId}).
-		First(&likeVideoInfo).Error
-	if err != nil && err.Error() != "record not found" {
-		log.Println("find like video info failed ", err.Error())
-		return likeVideoInfo, err
+		First(&likeVideoInfo).Error; err != nil {
+		return Like{}, err
 	}
 	log.Println("find like video info success")
 	return likeVideoInfo, nil
 }
 
+// UpdateLikeInfo update like relation 1-like 2-cancel
 func UpdateLikeInfo(ctx context.Context, userId, videoId int64, cancel int8) error {
 	if err := DB.
 		WithContext(ctx).

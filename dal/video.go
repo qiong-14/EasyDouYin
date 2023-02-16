@@ -44,3 +44,16 @@ func GetVideoStreamInfo(ctx context.Context, lastTime int64, limit int) (videos 
 	}
 	return videos
 }
+
+// MGetVideoInfo 获取视频
+func MGetVideoInfo(ctx context.Context, videoId []int64) (videos []VideoInfo) {
+	if len(videoId) == 0 {
+		return
+	}
+	if err := DB.WithContext(ctx).
+		Model(&VideoInfo{}).
+		Find(&videos, videoId).Error; err != nil {
+		_, _ = fmt.Fprint(os.Stderr, "获取视频流错误")
+	}
+	return
+}

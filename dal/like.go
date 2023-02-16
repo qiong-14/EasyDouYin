@@ -38,7 +38,7 @@ func GetLikeVideoIdxList(ctx context.Context, userId int64) ([]int64, error) {
 		WithContext(ctx).
 		Model(&Like{}).
 		Where(&Like{UserId: userId, Cancel: 1}).
-		Order("updated_at").
+		Order("updated_at desc").
 		Pluck("video_id", &likeVideoIdxList).Error; err != nil {
 		log.Println("get like video list failed")
 

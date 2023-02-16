@@ -28,7 +28,7 @@ func TestVideoGet(t *testing.T) {
 		videos = append(videos, handler.Video{
 			Id: id,
 			Author: handler.User{
-				Id:            userInfo.ID,
+				Id:            int64(userInfo.ID),
 				Name:          userInfo.Name,
 				FollowCount:   int64(rand.Intn(1999)),
 				FollowerCount: int64(rand.Intn(1000)),

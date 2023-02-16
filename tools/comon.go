@@ -13,6 +13,8 @@ func Encoder(pwd string) string {
 	pwd = hex.EncodeToString(s.Sum(nil))
 	return pwd
 }
+
+// GetEnvByKey get the environment key, if not exist return  ""
 func GetEnvByKey(key string) string {
 	if value, exist := os.LookupEnv(key); exist {
 		return value

@@ -27,7 +27,7 @@ create table if not exists `like_video`
     `updated_at` timestamp    not null default current_timestamp on update current_timestamp,
     `deleted_at` timestamp    null     default null,
     primary key (`id`),
-    key `user_vedio_idx` (`user_id`)
+    key `user_video_idx` (`user_id`)
 ) engine = InnoDB
     default charset = utf8mb4
     collate = utf8mb4_general_ci;

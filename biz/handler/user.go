@@ -42,12 +42,12 @@ func Register(ctx context.Context, c *app.RequestContext) {
 func UserInfo(ctx context.Context, c *app.RequestContext) {
 	idStr := c.Query("user_id")
 	var id int64
+	// 传入user_id时直接获取，未传入时寻找鉴权的user_id
 	if len(idStr) == 0 {
 		user, _ := c.Get(middleware.IdentityKey)
 		id = user.(*dal.User).Id
 	} else {
 		id, _ = strconv.ParseInt(idStr, 10, 64)
-
 	}
 
 	if user, err := dal.GetUserById(ctx, id); err == nil {

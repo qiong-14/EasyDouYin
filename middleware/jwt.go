@@ -25,7 +25,7 @@ var (
 func InitJwt() {
 	var err error
 	JwtMiddleware, err = jwt.New(&jwt.HertzJWTMiddleware{
-		Realm:         "test zone",
+		Realm:         "apitest zone",
 		Key:           []byte("secret key"),
 		Timeout:       24 * time.Hour,
 		MaxRefresh:    24 * time.Hour,

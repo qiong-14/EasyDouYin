@@ -1,4 +1,4 @@
-package test
+package apitest
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -36,7 +36,7 @@ func TestRelation(t *testing.T) {
 			containTestUserB = true
 		}
 	}
-	assert.True(t, containTestUserB, "Follow test user failed")
+	assert.True(t, containTestUserB, "Follow apitest user failed")
 
 	followerListResp := e.GET("/douyin/relation/follower/list/").
 		WithQuery("token", tokenB).WithQuery("user_id", userIdB).
@@ -54,7 +54,7 @@ func TestRelation(t *testing.T) {
 			containTestUserA = true
 		}
 	}
-	assert.True(t, containTestUserA, "Follower test user failed")
+	assert.True(t, containTestUserA, "Follower apitest user failed")
 }
 
 func TestChat(t *testing.T) {

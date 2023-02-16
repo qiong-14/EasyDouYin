@@ -1,4 +1,4 @@
-package test
+package apitest
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -81,7 +81,7 @@ func TestComment(t *testing.T) {
 		}
 	}
 
-	assert.True(t, containTestComment, "Can't find test comment in list")
+	assert.True(t, containTestComment, "Can't find apitest comment in list")
 
 	delCommentResp := e.POST("/douyin/comment/action/").
 		WithQuery("token", token).WithQuery("video_id", videoId).WithQuery("action_type", 2).WithQuery("comment_id", commentId).

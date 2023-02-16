@@ -7,6 +7,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
+	"github.com/qiong-14/EasyDouYin/middleware"
 	"net/http"
 	"strconv"
 	"sync/atomic"
@@ -24,9 +25,9 @@ type ChatResponse struct {
 
 // MessageAction no practical effect, just check if token is valid
 func MessageAction(ctx context.Context, c *app.RequestContext) {
-	userId, _ := c.Get("user_id")
+	u, _ := c.Get(middleware.IdentityKey)
 	toUserId := c.Query("to_user_id")
-	userIdA, _ := userId.(int64)
+	userIdA := u.(*dal.User).Id
 	userIdB, _ := strconv.ParseInt(toUserId, 10, 64)
 	content := c.Query("content")
 
@@ -55,9 +56,9 @@ func MessageAction(ctx context.Context, c *app.RequestContext) {
 
 // MessageChat all users have same follow list
 func MessageChat(ctx context.Context, c *app.RequestContext) {
-	userId, _ := c.Get("user_id")
+	u, _ := c.Get(middleware.IdentityKey)
 	toUserId := c.Query("to_user_id")
-	userIdA, _ := userId.(int64)
+	userIdA := u.(*dal.User).Id
 	userIdB, _ := strconv.ParseInt(toUserId, 10, 64)
 
 	if user, err := dal.GetUserById(ctx, userIdA); err == nil {

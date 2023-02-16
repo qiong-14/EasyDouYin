@@ -34,17 +34,17 @@ func InsertLikeVideoInfo(ctx context.Context, userId, videoId int64, cancel int8
 // GetLikeVideoIdxList return video id lists user likes by update time
 func GetLikeVideoIdxList(ctx context.Context, userId int64) ([]int64, error) {
 	var likeVideoIdxList []int64
-	if err := DB.
+	if err := DB.Table("(?) as u", DB.
 		WithContext(ctx).
 		Model(&Like{}).
 		Where(&Like{UserId: userId, Cancel: 1}).
-		Order("updated_at desc").
+		Distinct("video_id", "updated_at").
+		Order("updated_at desc")).
 		Pluck("video_id", &likeVideoIdxList).Error; err != nil {
 		log.Println("get like video list failed")
-
 		return nil, err
 	}
-	log.Println("get like video list success")
+	log.Println("get like video list success", likeVideoIdxList)
 	return likeVideoIdxList, nil
 }
 
@@ -88,6 +88,6 @@ func UpdateLikeInfo(ctx context.Context, userId, videoId int64, cancel int8) err
 		log.Println("update like video info failed:", err.Error())
 		return err
 	}
-	log.Printf("update like to %s video info success:", []string{"like", "dislike"}[int8(cancel)-1])
+	log.Printf("update  %s video info success", []string{"like", "dislike"}[int8(cancel)-1])
 	return nil
 }

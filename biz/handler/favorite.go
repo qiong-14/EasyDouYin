@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -81,31 +82,38 @@ func FavoriteList(ctx context.Context, c *app.RequestContext) {
 		})
 		return
 	}
-	videos := dal.MGetVideoInfo(ctx, videoIdList)
-	videosList := make([]resp.Video, len(videos))
-	for i, v := range videos {
-		user, _ := dal.GetUserById(ctx, v.OwnerId)
-		author := resp.User{
-			Id:            user.Id,
-			Name:          user.Name,
-			FollowCount:   0,
-			FollowerCount: 0,
-			IsFollow:      true,
-		}
-		playUrl, coverUrl, _ := middleware.GetUrlOfVideoAndCover(context.Background(),
-			v.Title, time.Hour)
-		favoriteCount, _ := dal.GetLikeUserCount(ctx, int64(v.ID))
-		videosList[i] = resp.Video{
-			Id:            int64(v.ID),
-			Author:        author,
-			PlayUrl:       playUrl.String(),
-			CoverUrl:      coverUrl.String(),
-			FavoriteCount: favoriteCount,
-			CommentCount:  0,
-			IsFavorite:    true,
-		}
+
+	videosList := make([]resp.Video, len(videoIdList))
+	var wg sync.WaitGroup
+	wg.Add(len(videoIdList))
+	for i, id := range videoIdList {
+		go func(j int, vid int64) {
+			defer wg.Done()
+			v := dal.GetVideoInfoById(ctx, vid)
+			user, _ := dal.GetUserById(ctx, v.OwnerId)
+			author := resp.User{
+				Id:            user.Id,
+				Name:          user.Name,
+				FollowCount:   0,
+				FollowerCount: 0,
+				IsFollow:      true,
+			}
+			playUrl, coverUrl, _ := middleware.GetUrlOfVideoAndCover(context.Background(),
+				v.Title, time.Hour)
+			favoriteCount, _ := dal.GetLikeUserCount(ctx, int64(v.ID))
+			videosList[j] = resp.Video{
+				Id:            int64(v.ID),
+				Author:        author,
+				PlayUrl:       playUrl.String(),
+				CoverUrl:      coverUrl.String(),
+				FavoriteCount: favoriteCount,
+				CommentCount:  0,
+				IsFavorite:    true,
+			}
+		}(i, id)
 
 	}
+	wg.Wait()
 
 	c.JSON(http.StatusOK, VideoListResponse{
 		Response: resp.Response{

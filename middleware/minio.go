@@ -12,10 +12,10 @@ import (
 )
 
 var (
-	endpoint        = utils.GetEnvByKey("MINIO_ENDPOINT")
-	accessKeyID     = utils.GetEnvByKey("MINIO_ACCESS_KEY")
-	secretAccessKey = utils.GetEnvByKey("MINIO_SECRET_KEY")
-	bucketName      = utils.GetEnvByKey("MINIO_BUCKET")
+	endpoint        = tools.GetEnvByKey("MINIO_ENDPOINT")
+	accessKeyID     = tools.GetEnvByKey("MINIO_ACCESS_KEY")
+	secretAccessKey = tools.GetEnvByKey("MINIO_SECRET_KEY")
+	bucketName      = tools.GetEnvByKey("MINIO_BUCKET")
 	Client          *minio.Client
 )
 

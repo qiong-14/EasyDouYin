@@ -41,7 +41,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	// 加密储存
-	if err = dal.CreateUser(ctx, &dal.User{Name: username, Password: utils.Encoder(password)}); err != nil {
+	if err = dal.CreateUser(ctx, &dal.User{Name: username, Password: tools.Encoder(password)}); err != nil {
 		c.JSON(consts.StatusOK, resp.UserLoginResponse{
 			Response: resp.Response{StatusCode: 1, StatusMsg: "user create failed"},
 		})

@@ -7,13 +7,14 @@ import (
 	"github.com/hertz-contrib/jwt"
 	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
-	utils2 "github.com/qiong-14/EasyDouYin/tools"
+	"github.com/qiong-14/EasyDouYin/tools"
 
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"strings"
 	"time"
+	"errors"
 )
 
 var (
@@ -26,9 +27,9 @@ func InitJwt() {
 	JwtMiddleware, err = jwt.New(&jwt.HertzJWTMiddleware{
 		Realm:         "test zone",
 		Key:           []byte("secret key"),
-		Timeout:       time.Hour,
-		MaxRefresh:    time.Hour,
-		TokenLookup:   "header: Authorization, query: token, cookie: jwt",
+		Timeout:       24*time.Hour,
+		MaxRefresh:    24*time.Hour,
+		TokenLookup:   "header: Authorization, query: token, cookie: jwt, form: token",
 		TokenHeadName: "Bearer",
 		LoginResponse: func(ctx context.Context, c *app.RequestContext, code int, token string, expire time.Time) {
 			payloads := resp.Payload{}
@@ -52,8 +53,13 @@ func InitJwt() {
 				return nil, err
 			}
 			user, err := dal.GetUserByName(ctx, loginStruct.Username)
-			if utils2.Encoder(loginStruct.Password) == user.Password {
+			if err != nil {
+				return nil, err
+			}
+			if tools.Encoder(loginStruct.Password) == user.Password {
 				return user, nil
+			}else{
+				err=errors.New("password error")
 			}
 			return nil, err
 		},

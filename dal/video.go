@@ -45,3 +45,14 @@ func GetVideoStreamInfo(ctx context.Context, lastTime int64, limit int) (videos 
 	}
 	return videos
 }
+
+// GetVideoInfoById GetVideoInfo get video info by id
+func GetVideoInfoById(ctx context.Context, videoId int64) (video VideoInfo) {
+	if err := DB.WithContext(ctx).
+		Model(&VideoInfo{}).
+		Where("id = ?", videoId).
+		First(&video).Error; err != nil {
+		_, _ = fmt.Fprint(os.Stderr, "获取视频错误")
+	}
+	return video
+}

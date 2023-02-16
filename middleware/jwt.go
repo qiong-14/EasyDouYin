@@ -11,10 +11,10 @@ import (
 
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
-	"errors"
 )
 
 var (
@@ -27,14 +27,14 @@ func InitJwt() {
 	JwtMiddleware, err = jwt.New(&jwt.HertzJWTMiddleware{
 		Realm:         "test zone",
 		Key:           []byte("secret key"),
-		Timeout:       24*time.Hour,
-		MaxRefresh:    24*time.Hour,
+		Timeout:       24 * time.Hour,
+		MaxRefresh:    24 * time.Hour,
 		TokenLookup:   "header: Authorization, query: token, cookie: jwt, form: token",
 		TokenHeadName: "Bearer",
 		LoginResponse: func(ctx context.Context, c *app.RequestContext, code int, token string, expire time.Time) {
 			payloads := resp.Payload{}
-			json_payloads, _ := base64.RawURLEncoding.DecodeString(strings.Split(token, ".")[1])
-			err = json.Unmarshal(json_payloads, &payloads)
+			jsonPayloads, _ := base64.RawURLEncoding.DecodeString(strings.Split(token, ".")[1])
+			err = json.Unmarshal(jsonPayloads, &payloads)
 			c.JSON(http.StatusOK, resp.UserLoginResponse{
 				Response: resp.Response{StatusCode: 0, StatusMsg: "login success"},
 				UserId:   payloads.Identity,
@@ -58,8 +58,8 @@ func InitJwt() {
 			}
 			if tools.Encoder(loginStruct.Password) == user.Password {
 				return user, nil
-			}else{
-				err=errors.New("password error")
+			} else {
+				err = errors.New("password error")
 			}
 			return nil, err
 		},

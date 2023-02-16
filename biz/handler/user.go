@@ -13,21 +13,6 @@ import (
 	"strconv"
 )
 
-// usersLoginInfo use map to store user info, and key is username+password for demo
-// user data will be cleared every time the server starts
-// test data: username=zhanglei, password=douyin
-//var usersLoginInfo = map[string]resp.User{
-//	"zhangleidouyin": {
-//		Id:            1,
-//		Name:          "zhanglei",
-//		FollowCount:   10,
-//		FollowerCount: 5,
-//		IsFollow:      true,
-//	},
-//}
-
-//var userIdSequence = int64(1)
-
 func Register(ctx context.Context, c *app.RequestContext) {
 	username := c.Query("username")
 	password := c.Query("password")

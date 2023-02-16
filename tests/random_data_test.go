@@ -58,7 +58,7 @@ func TestVideoMinio(t *testing.T) {
 func TestVideoInsert(t *testing.T) {
 	ctx := context.Background()
 	minioUtils.GetFileList(ctx, func(info minio.ObjectInfo) {
-		if strings.HasSuffix(info.Key, ".mp4") {
+		if strings.HasSuffix(info.Key, ".mp4") && strings.HasPrefix(info.Key, "v_") {
 			title := info.Key[:len(info.Key)-4]
 			fmt.Println(title)
 			if err := dal.CreateVideoInfo(ctx, &dal.VideoInfo{

@@ -1,6 +1,7 @@
 drop table if exists user_relation;
 drop table if exists videos;
 drop table if exists `user`;
+drop table if exists `like_video`;
 -- 用户表 users --
 create table if not exists `user`
 (
@@ -15,6 +16,21 @@ create table if not exists `user`
 ) engine = InnoDB
   default charset = utf8mb4
   collate = utf8mb4_general_ci comment ='User table';
+
+create table if not exists `like_video`
+(
+    `id`         bigint not null auto_increment,
+    `user_id`    bigint not null,
+    `video_id`   bigint not null,
+    `cancel`     tinyint not null,
+    `created_at` timestamp    not null default current_timestamp,
+    `updated_at` timestamp    not null default current_timestamp on update current_timestamp,
+    `deleted_at` timestamp    null     default null,
+    primary key (`id`),
+    key `user_video_idx` (`user_id`)
+) engine = InnoDB
+    default charset = utf8mb4
+    collate = utf8mb4_general_ci;
 
 create table if not exists user_relation
 (

@@ -37,7 +37,8 @@ func GetVideoStreamInfo(ctx context.Context, lastTime int64, limit int) (videos 
 	videos = make([]VideoInfo, limit)
 	if err := DB.WithContext(ctx).
 		Model(&VideoInfo{}).
-		Where("created_at > ?", time.Duration(lastTime)*time.Second).
+		// Where("created_at > ?", time.Duration(lastTime)*time.Second).
+		Where("created_at > ?", time.Unix(lastTime, 0).Format("2006-01-02 15:04:05")).
 		Order("created_at").
 		Limit(limit).Find(&videos).Error; err != nil {
 		_, _ = fmt.Fprint(os.Stderr, "获取视频流错误")

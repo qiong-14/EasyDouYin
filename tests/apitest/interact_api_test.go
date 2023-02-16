@@ -34,6 +34,7 @@ func TestFavorite(t *testing.T) {
 	favoriteListResp.Value("status_code").Number().Equal(0)
 	for _, element := range favoriteListResp.Value("video_list").Array().Iter() {
 		video := element.Object()
+		// 此处断言错误
 		video.ContainsKey("id")
 		video.ContainsKey("author")
 		video.Value("play_url").String().NotEmpty()

@@ -44,7 +44,7 @@ func GetLikeVideoIdxList(ctx context.Context, userId int64) ([]int64, error) {
 		log.Println("get like video list failed")
 		return nil, err
 	}
-	log.Println("get like video list success", likeVideoIdxList)
+	//log.Println("get like video list success:", likeVideoIdxList)
 	return likeVideoIdxList, nil
 }
 
@@ -60,7 +60,7 @@ func GetLikeUserCount(ctx context.Context, videoId int64) (int64, error) {
 		log.Printf("no users like video %d", videoId)
 		return 0, err
 	}
-	log.Printf("get %d users like video %d", cnt, videoId)
+	//log.Printf("get %d users like video %d", cnt, videoId)
 	return cnt, nil
 }
 
@@ -74,7 +74,7 @@ func FindLikeVideoInfo(ctx context.Context, userId, videoId int64) (Like, error)
 		First(&likeVideoInfo).Error; err != nil {
 		return Like{}, err
 	}
-	log.Println("find like video info success")
+	//log.Println("find like video info success")
 	return likeVideoInfo, nil
 }
 
@@ -88,6 +88,6 @@ func UpdateLikeInfo(ctx context.Context, userId, videoId int64, cancel int8) err
 		log.Println("update like video info failed:", err.Error())
 		return err
 	}
-	log.Printf("update  %s video info success", []string{"like", "dislike"}[int8(cancel)-1])
+	//log.Printf("update  %s video info success", []string{"like", "dislike"}[int8(cancel)-1])
 	return nil
 }

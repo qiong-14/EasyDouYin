@@ -6,31 +6,47 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
+	"github.com/qiong-14/EasyDouYin/middleware"
+	"log"
 	"net/http"
+	"strconv"
 )
 
 // FavoriteAction no practical effect, just check if token is valid
 func FavoriteAction(ctx context.Context, c *app.RequestContext) {
-	userId, _ := c.Get("user_id")
-	if _, err := dal.GetUserById(ctx, userId.(int64)); err == nil {
-		c.JSON(http.StatusOK, resp.Response{StatusCode: 0})
-	} else {
-		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
-	}
-	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
+	defer hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
 		c.Response.StatusCode(),
 		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
+	u, _ := c.Get(middleware.IdentityKey)
+	userId := u.(*dal.User).Id
+	videoId, err := strconv.ParseInt(c.Query("video_id"), 10, 64)
+	if err != nil {
+		log.Println("get video_id failed")
+		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "get video_id failed"})
+		return
+	}
+	actionType, err := strconv.Atoi(c.Query("action_type"))
+	if err != nil {
+		log.Println("get action_type failed")
+		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "get action_type failed"})
+		return
+	}
+
+	if _, err := dal.FindLikeVideoInfo(ctx, userId, videoId); err != nil {
+
+	}
+
 }
 
 // FavoriteList all users have same favorite video list
 func FavoriteList(ctx context.Context, c *app.RequestContext) {
+	defer hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
+		c.Response.StatusCode(),
+		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 	c.JSON(http.StatusOK, VideoListResponse{
 		Response: resp.Response{
 			StatusCode: 0,
 		},
 		VideoList: DemoVideos,
 	})
-	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
-		c.Response.StatusCode(),
-		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 }

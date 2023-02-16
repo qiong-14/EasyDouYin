@@ -40,13 +40,24 @@ func Register(ctx context.Context, c *app.RequestContext) {
 }
 
 func UserInfo(ctx context.Context, c *app.RequestContext) {
-	id, _ := strconv.ParseInt(c.Query("user_id"), 10, 64)
+	idStr := c.Query("user_id")
+	var id int64
+	if len(idStr) == 0 {
+		user, _ := c.Get(middleware.IdentityKey)
+		id = user.(*dal.User).Id
+	} else {
+		id, _ = strconv.ParseInt(idStr, 10, 64)
+
+	}
+
 	if user, err := dal.GetUserById(ctx, id); err == nil {
+		favoriteCount, _ := dal.GetLikeUserCount(ctx, user.Id)
 		c.JSON(http.StatusOK, resp.UserResponse{
 			Response: resp.Response{StatusCode: 0},
 			User: resp.User{
-				Id:   user.Id,
-				Name: user.Name,
+				Id:            user.Id,
+				Name:          user.Name,
+				FavoriteCount: favoriteCount,
 			},
 		})
 	} else {

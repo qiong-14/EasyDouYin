@@ -78,13 +78,13 @@ func GetFileList(ctx context.Context, handler func(info minio.ObjectInfo), maxCo
 	return res
 }
 
-func getFileUrl(ctx context.Context, objName string, timeout time.Duration) (presignedURL *url.URL, err error) {
+func getFileUrl(ctx context.Context, objName string, timeout time.Duration) (preSignedURL *url.URL, err error) {
 	// Set request parameters for content-disposition.
 	ctx = context.Background()
 	reqParams := make(url.Values)
 	reqParams.Set("response-content-disposition", "attachment; filename="+objName)
 
-	if presignedURL, err = Client.PresignedGetObject(ctx, bucketName, objName, timeout, reqParams); err != nil {
+	if preSignedURL, err = Client.PresignedGetObject(ctx, bucketName, objName, timeout, reqParams); err != nil {
 		fmt.Println(err)
 	}
 	return

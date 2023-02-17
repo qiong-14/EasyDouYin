@@ -3,3 +3,6 @@ EasyDouYin*
 .vscode/
 .DS_Store
 dy_secure_config*
+*.mp4
+*.jpg
+!bear.mp4

@@ -13,21 +13,6 @@ import (
 	"strconv"
 )
 
-// usersLoginInfo use map to store user info, and key is username+password for demo
-// user data will be cleared every time the server starts
-// test data: username=zhanglei, password=douyin
-//var usersLoginInfo = map[string]resp.User{
-//	"zhangleidouyin": {
-//		Id:            1,
-//		Name:          "zhanglei",
-//		FollowCount:   10,
-//		FollowerCount: 5,
-//		IsFollow:      true,
-//	},
-//}
-
-//var userIdSequence = int64(1)
-
 func Register(ctx context.Context, c *app.RequestContext) {
 	username := c.Query("username")
 	password := c.Query("password")
@@ -55,13 +40,24 @@ func Register(ctx context.Context, c *app.RequestContext) {
 }
 
 func UserInfo(ctx context.Context, c *app.RequestContext) {
-	id, _ := strconv.ParseInt(c.Query("user_id"), 10, 64)
+	idStr := c.Query("user_id")
+	var id int64
+	// 传入user_id时直接获取，未传入时寻找鉴权的user_id
+	if len(idStr) == 0 {
+		user, _ := c.Get(middleware.IdentityKey)
+		id = user.(*dal.User).Id
+	} else {
+		id, _ = strconv.ParseInt(idStr, 10, 64)
+	}
+
 	if user, err := dal.GetUserById(ctx, id); err == nil {
+		favoriteCount, _ := dal.GetLikeUserCount(ctx, user.Id)
 		c.JSON(http.StatusOK, resp.UserResponse{
 			Response: resp.Response{StatusCode: 0},
 			User: resp.User{
-				Id:   user.Id,
-				Name: user.Name,
+				Id:            user.Id,
+				Name:          user.Name,
+				FavoriteCount: favoriteCount,
 			},
 		})
 	} else {

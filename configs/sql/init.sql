@@ -1,7 +1,9 @@
+-- Active: 1676509582268@@192.168.1.152@9910@douyindb
 drop table if exists user_relation;
 drop table if exists videos;
 drop table if exists `user`;
 drop table if exists `like_video`;
+drop table if exists `message`;
 -- 用户表 users --
 create table if not exists `user`
 (
@@ -59,4 +61,17 @@ create table if not exists videos
     `likes_count`     bigint             default 0 comment '点赞人数',
     `comment_archive` longtext comment '评论信息的最新归档',
     foreign key (owner_id) references `user` (id)
-)
+);
+
+
+create table if not exists `message`
+(
+    `id`              bigint primary key auto_increment comment '消息ID',
+    `created_at`      timestamp not null default current_timestamp comment 'message create time',
+    `updated_at`      timestamp not null default current_timestamp on update current_timestamp comment 'message update time',
+    `deleted_at`      timestamp null     default null comment 'message delete time',
+    `to_user_id`      bigint not null  comment '接收者id',
+    `from_user_id`    bigint not null  comment '发送者id',
+    `content`         varchar(255)     comment '消息内容',
+    `create_time`     bigint null      comment '创建时间int64'
+);

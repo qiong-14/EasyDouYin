@@ -10,17 +10,14 @@ import (
 	"github.com/qiong-14/EasyDouYin/middleware"
 	"net/http"
 	"strconv"
-	"sync/atomic"
 	"time"
 )
 
-var tempChat = map[string][]resp.Message{}
-
-var messageIdSequence = int64(1)
+var tempChat map[string]int = make(map[string]int)
 
 type ChatResponse struct {
 	resp.Response
-	MessageList []resp.Message `json:"message_list"`
+	MessageList []dal.Message `json:"message_list"`
 }
 
 // MessageAction no practical effect, just check if token is valid
@@ -31,23 +28,19 @@ func MessageAction(ctx context.Context, c *app.RequestContext) {
 	userIdB, _ := strconv.ParseInt(toUserId, 10, 64)
 	content := c.Query("content")
 
-	if user, err := dal.GetUserById(ctx, userIdA); err == nil {
-		chatKey := genChatKey(user.Id, userIdB)
-		atomic.AddInt64(&messageIdSequence, 1)
-		curMessage := resp.Message{
-			Id:         messageIdSequence,
-			Content:    content,
-			CreateTime: time.Now().Unix(),
+	if user, err := dal.GetUserById(ctx, userIdA); err != nil {
+		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+	} else {
+		curMessage := dal.Message{
+			ToUserId:    userIdB,
+			FromUserId:  user.Id,
+			Content:     content,
+			CreateTime:  time.Now().Unix(),
 		}
-
-		if messages, exist := tempChat[chatKey]; exist {
-			tempChat[chatKey] = append(messages, curMessage)
-		} else {
-			tempChat[chatKey] = []resp.Message{curMessage}
+		if err=dal.InsertMessage(ctx,&curMessage);err !=nil{
+			return
 		}
 		c.JSON(http.StatusOK, resp.Response{StatusCode: 0})
-	} else {
-		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 	}
 	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
 		c.Response.StatusCode(),
@@ -61,11 +54,30 @@ func MessageChat(ctx context.Context, c *app.RequestContext) {
 	userIdA := u.(*dal.User).Id
 	userIdB, _ := strconv.ParseInt(toUserId, 10, 64)
 
-	if user, err := dal.GetUserById(ctx, userIdA); err == nil {
-		chatKey := genChatKey(user.Id, userIdB)
-		c.JSON(http.StatusOK, ChatResponse{Response: resp.Response{StatusCode: 0}, MessageList: tempChat[chatKey]})
-	} else {
+	if user, err := dal.GetUserById(ctx, userIdA); err != nil {
 		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+	} else {
+		messages,err:=dal.GetMessage(ctx,userIdB,user.Id)
+		if err!=nil{
+			c.JSON(http.StatusOK, ChatResponse{Response: resp.Response{StatusCode: 0}, MessageList:[]dal.Message{}})
+			return
+		}
+		chatKey := genChatKey(user.Id, userIdB)
+		if _,exist:=tempChat[chatKey];exist==false{
+			tempChat[chatKey]=len(messages)
+			c.JSON(http.StatusOK, ChatResponse{Response: resp.Response{StatusCode: 0}, MessageList:messages})
+		}else if tempChat[chatKey]==len(messages){
+			c.JSON(http.StatusOK, ChatResponse{Response: resp.Response{StatusCode: 0}, MessageList:[]dal.Message{}})
+		}else{
+			addedMessages:=[]dal.Message{}
+			for i := tempChat[chatKey]; i < len(messages); i++ {
+				if messages[i].FromUserId==userIdB{
+					addedMessages=append(addedMessages,messages[i])
+				}
+			}
+			c.JSON(http.StatusOK, ChatResponse{Response: resp.Response{StatusCode: 0}, MessageList:addedMessages})
+			tempChat[chatKey]=len(messages)
+		}	
 	}
 	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
 		c.Response.StatusCode(),

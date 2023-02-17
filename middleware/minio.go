@@ -23,7 +23,16 @@ var (
 	Client          *minio.Client
 )
 
-func Init(ctx context.Context) {
+func reloadConfig() {
+	endpoint = tools.GetEnvByKey("MINIO_ENDPOINT")
+	accessKeyID = tools.GetEnvByKey("MINIO_ACCESS_KEY")
+	secretAccessKey = tools.GetEnvByKey("MINIO_SECRET_KEY")
+	bucketName = tools.GetEnvByKey("MINIO_BUCKET")
+}
+
+func InitMinio(ctx context.Context) {
+	// reload
+	reloadConfig()
 	// Initialize minio client object.
 	minioClient, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),

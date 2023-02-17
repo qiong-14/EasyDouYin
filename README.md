@@ -30,10 +30,10 @@ EasyDouyin
 ```shell
 ## for macos
 brew install ffmpeg
-## for windows
-todo
+## for windows, you need to fix env variables(PATH) to include ffmpeg
+winget install ffmpeg
 ## for ubuntu, debian, w.r.t. apt
-todo
+sudo apt-get install -y ffmpeg
 ## others
 todo
 ```

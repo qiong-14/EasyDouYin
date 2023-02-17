@@ -7,7 +7,7 @@ import (
 	"github.com/henrylee2cn/goutil"
 	"github.com/minio/minio-go/v7"
 	"github.com/qiong-14/EasyDouYin/dal"
-	minioUtils "github.com/qiong-14/EasyDouYin/middleware"
+	"github.com/qiong-14/EasyDouYin/middleware"
 	"math"
 	"math/rand"
 	"os"
@@ -18,8 +18,9 @@ import (
 
 func init() {
 	fmt.Println("init")
-	//dal.Init()
-	//minioUtils.Init(context.Background())
+
+	dal.Init()
+	middleware.InitMinio(context.Background())
 }
 
 func TestDBInsert(t *testing.T) {
@@ -45,8 +46,8 @@ func TestVideoMinio(t *testing.T) {
 	ctx := context.Background()
 	//minioUtils.ListAllBuckets(ctx)
 
-	minioUtils.GetFileList(ctx, nil, 10)
-	videoURL, coverURL, err := minioUtils.GetUrlOfVideoAndCover(ctx, "v_ApplyEyeMakeup_g01_c01", time.Hour)
+	middleware.GetFileList(ctx, nil, 10)
+	videoURL, coverURL, err := middleware.GetUrlOfVideoAndCover(ctx, "v_ApplyEyeMakeup_g01_c01", time.Hour)
 	if err != nil {
 		t.Error("无法获取到预览链接")
 	}
@@ -57,7 +58,7 @@ func TestVideoMinio(t *testing.T) {
 
 func TestVideoInsert(t *testing.T) {
 	ctx := context.Background()
-	minioUtils.GetFileList(ctx, func(info minio.ObjectInfo) {
+	middleware.GetFileList(ctx, func(info minio.ObjectInfo) {
 		if strings.HasSuffix(info.Key, ".mp4") && strings.HasPrefix(info.Key, "v_") {
 			title := info.Key[:len(info.Key)-4]
 			fmt.Println(title)

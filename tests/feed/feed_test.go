@@ -13,7 +13,7 @@ import (
 
 func init() {
 	dal.Init()
-	minioUtils.Init(context.Background())
+	minioUtils.InitMinio(context.Background())
 	fmt.Println("init")
 }
 

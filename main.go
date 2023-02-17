@@ -12,9 +12,11 @@ import (
 )
 
 func main() {
+	// LOAD VAR
+	//tools.LoadEnvFromJsonCfg("./dy_secure_config.json")
 	go service.RunMessageServer()
 	dal.Init()
-	middleware.Init(context.Background())
+	middleware.InitMinio(context.Background())
 	middleware.InitJwt()
 	h := server.Default(server.WithHostPorts("0.0.0.0:8080"))
 	router.Register(h)

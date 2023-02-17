@@ -21,6 +21,14 @@ type VideoInfo struct {
 	UpdateAt       time.Time `gorm:"column:update_at;type:TIMESTAMP;default:CURRENT_TIMESTAMP on update current_timestamp" json:"update_at,omitempty"`
 }
 
+var InvalidVideo = VideoInfo{
+	Model: gorm.Model{ID: -1},
+}
+
+func (v *VideoInfo) VideoIsValid() bool {
+	return v.ID == InvalidVideo.ID
+}
+
 // TableName videos table name
 func (v *VideoInfo) TableName() string {
 	return constants.VideoTableName

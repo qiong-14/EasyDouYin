@@ -109,7 +109,7 @@ func ListAllBuckets(ctx context.Context) []minio.BucketInfo {
 }
 
 func getFileUrl(ctx context.Context, objName string, timeout time.Duration) (preSignedURL *url.URL, err error) {
-	// Set request parameters for content-disposition.
+	// set request parameters for content-disposition.
 	ctx = context.Background()
 	reqParams := make(url.Values)
 	reqParams.Set("response-content-disposition", "attachment; filename="+objName)

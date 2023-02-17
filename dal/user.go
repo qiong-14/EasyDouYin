@@ -14,6 +14,14 @@ type User struct {
 	Password string `json:"password"`
 }
 
+var InvalidUser = User{
+	Id: -1,
+}
+
+func (u User) UserIsValid() bool {
+	return u.Id == InvalidUser.Id
+}
+
 // TableName user table name
 func (u User) TableName() string {
 	return constants.UserTableName

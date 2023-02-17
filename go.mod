@@ -8,6 +8,7 @@ require (
 	github.com/cloudwego/hertz v0.5.2
 	github.com/disintegration/imaging v1.6.2
 	github.com/gavv/httpexpect/v2 v2.12.0
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/henrylee2cn/goutil v0.0.0-20210127050712-89660552f6f8
 	github.com/hertz-contrib/jwt v1.0.2
 	github.com/minio/minio-go/v7 v7.0.47

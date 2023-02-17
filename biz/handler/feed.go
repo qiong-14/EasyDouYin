@@ -61,10 +61,10 @@ func getVideoEntities(ctx context.Context, videoInfos []dal.VideoInfo) []resp.Vi
 	return videosList
 }
 
-func GetVideoStream(ctx context.Context, lastTime int64, limit int) []resp.Video {
+func GetVideoStream(ctx context.Context, lastTime int64, limit int) ([]resp.Video, int64) {
 	videoInfos := dal.GetVideoStreamInfo(ctx, lastTime, limit)
 
-	return getVideoEntities(ctx, videoInfos)
+	return getVideoEntities(ctx, videoInfos), videoInfos[len(videoInfos)-1].CreatedAt.Unix()
 }
 
 func Feed(ctx context.Context, c *app.RequestContext) {
@@ -75,12 +75,12 @@ func Feed(ctx context.Context, c *app.RequestContext) {
 		latestTime, _ = strconv.Atoi(latestTimeStr)
 	}
 
-	videoList := GetVideoStream(ctx, int64(latestTime), constants.FeedVideosCount)
+	videoList, nextTime := GetVideoStream(ctx, int64(latestTime), constants.FeedVideosCount)
 	c.JSON(consts.StatusOK, FeedResponse{
 		Response:  resp.Response{StatusCode: 0},
 		VideoList: videoList,
-		// todo: 需要替换成本次视频最小的时间戳
-		NextTime: time.Now().Unix(),
+		// note: 需要替换成本次视频最小的时间戳
+		NextTime: nextTime,
 	})
 	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
 		c.Response.StatusCode(),

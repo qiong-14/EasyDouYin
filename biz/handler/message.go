@@ -57,18 +57,23 @@ func MessageChat(ctx context.Context, c *app.RequestContext) {
 	if user, err := dal.GetUserById(ctx, userIdA); err != nil {
 		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 	} else {
+		// 根据双方ID获取全部聊天记录
 		messages,err:=dal.GetMessage(ctx,userIdB,user.Id)
 		if err!=nil{
 			c.JSON(http.StatusOK, ChatResponse{Response: resp.Response{StatusCode: 0}, MessageList:[]dal.Message{}})
 			return
 		}
+		// tempChat[chatKey]记录了上一次读取后的消息长度
 		chatKey := genChatKey(user.Id, userIdB)
 		if _,exist:=tempChat[chatKey];exist==false{
+			// 第一次读取，消息记录全部读取
 			tempChat[chatKey]=len(messages)
 			c.JSON(http.StatusOK, ChatResponse{Response: resp.Response{StatusCode: 0}, MessageList:messages})
 		}else if tempChat[chatKey]==len(messages){
+			// 前端3s一次的轮询，但消息记录没有变化，返回空结构体
 			c.JSON(http.StatusOK, ChatResponse{Response: resp.Response{StatusCode: 0}, MessageList:[]dal.Message{}})
 		}else{
+			// 读取新增的聊天记录，并去除自己发送的消息
 			addedMessages:=[]dal.Message{}
 			for i := tempChat[chatKey]; i < len(messages); i++ {
 				if messages[i].FromUserId==userIdB{

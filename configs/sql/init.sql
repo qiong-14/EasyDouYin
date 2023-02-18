@@ -1,4 +1,4 @@
--- Active: 1676509582268@@192.168.1.152@9910@douyindb
+
 drop table if exists user_relation;
 drop table if exists videos;
 drop table if exists `user`;

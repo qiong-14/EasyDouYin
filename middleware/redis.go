@@ -16,14 +16,14 @@ import (
 )
 
 var (
-	clients [16]*redis.Client
-	tokenClient,
-	userInfoClient,
-	videoInfoClient,
-	favUserClient,
-	favVideoClient,
-	followsClient,
-	fansClient *redis.Client
+	clients         [16]*redis.Client
+	TokenClient     *redis.Client
+	UserInfoClient  *redis.Client
+	VideoInfoClient *redis.Client
+	FavUserClient   *redis.Client
+	FavVideoClient  *redis.Client
+	FollowsClient   *redis.Client
+	FansClient      *redis.Client
 )
 
 func GetInstance(bucket int) *redis.Client {
@@ -44,13 +44,13 @@ func GetInstance(bucket int) *redis.Client {
 }
 
 func InitRedis() {
-	tokenClient = GetInstance(0)
-	userInfoClient = GetInstance(1)
-	videoInfoClient = GetInstance(2)
-	favUserClient = GetInstance(3)
-	favVideoClient = GetInstance(3)
-	followsClient = GetInstance(4)
-	fansClient = GetInstance(4)
+	TokenClient = GetInstance(0)
+	UserInfoClient = GetInstance(1)
+	VideoInfoClient = GetInstance(2)
+	FavUserClient = GetInstance(3)
+	FavVideoClient = GetInstance(3)
+	FollowsClient = GetInstance(4)
+	FansClient = GetInstance(4)
 	checkRedis()
 }
 
@@ -58,7 +58,7 @@ func InitRedis() {
 
 // GetUserTokenRedis token cache, see also SetUserTokenRedis
 func GetUserTokenRedis(userId int64) (token string, err error) {
-	token, err = tokenClient.Get(fmt.Sprintf(constants.RedisTokenPtn, userId)).Result()
+	token, err = TokenClient.Get(fmt.Sprintf(constants.RedisTokenPtn, userId)).Result()
 	if err == redis.Nil {
 		return "", err
 	}
@@ -66,7 +66,7 @@ func GetUserTokenRedis(userId int64) (token string, err error) {
 }
 
 func SetUserTokenRedis(userId int64, token string) error {
-	if err := tokenClient.Set(fmt.Sprintf(constants.RedisTokenPtn, userId), token, time.Hour*24).Err(); err != nil {
+	if err := TokenClient.Set(fmt.Sprintf(constants.RedisTokenPtn, userId), token, time.Hour*24).Err(); err != nil {
 		return err
 	}
 	return nil
@@ -75,7 +75,7 @@ func SetUserTokenRedis(userId int64, token string) error {
 // GetUserInfoRedis user info cache, see also SetUserInfoRedis, renewUserInfoExpire
 func GetUserInfoRedis(userId int64) (user dal.User, err error) {
 	key := fmt.Sprintf(constants.RedisUserInfoPtn, userId)
-	userInfoStr, err := userInfoClient.Get(key).Result()
+	userInfoStr, err := UserInfoClient.Get(key).Result()
 	if err == redis.Nil {
 		return dal.InvalidUser, err
 	}
@@ -83,7 +83,7 @@ func GetUserInfoRedis(userId int64) (user dal.User, err error) {
 		// renew
 		return dal.InvalidUser, err
 	}
-	return user, renewExpire(userInfoClient, key)
+	return user, renewExpire(UserInfoClient, key)
 }
 
 func SetUserInfoRedis(user dal.User) (err error) {
@@ -92,14 +92,13 @@ func SetUserInfoRedis(user dal.User) (err error) {
 		return err
 	}
 	// set
-	err = userInfoClient.Set(
+	err = UserInfoClient.Set(
 		fmt.Sprintf(constants.RedisUserInfoPtn, user.Id), userInfoStr,
 		randomExpire(time.Hour*24)).Err()
 
 	if err != nil {
 		return err
 	}
-
 	return
 }
 
@@ -107,12 +106,12 @@ func SetUserInfoRedis(user dal.User) (err error) {
 // similar to GetUserInfoRedis
 func GetVideoInfoRedis(videoId int64) (video dal.VideoInfo, err error) {
 	key := fmt.Sprintf(constants.RedisVideoInfoPtn, videoId)
-	videoInfoStr, err := videoInfoClient.Get(key).Result()
+	videoInfoStr, err := VideoInfoClient.Get(key).Result()
 	if err == redis.Nil {
 		return dal.InvalidVideo, err
 	}
 	if err = json.Unmarshal([]byte(videoInfoStr), &video); err != nil {
-		return dal.InvalidVideo, renewExpire(videoInfoClient, key)
+		return dal.InvalidVideo, renewExpire(VideoInfoClient, key)
 	}
 	return
 }
@@ -123,7 +122,7 @@ func SetVideoInfoRedis(video dal.VideoInfo) (err error) {
 		return err
 	}
 	// set
-	err = videoInfoClient.Set(
+	err = VideoInfoClient.Set(
 		fmt.Sprintf(constants.RedisVideoInfoPtn, video.ID),
 		videoInfoStr,
 		randomExpire(time.Hour*24),
@@ -137,7 +136,8 @@ func SetVideoInfoRedis(video dal.VideoInfo) (err error) {
 
 func GetUserFavVideosRedis(userId int64) (videoIdList []int64, err error) {
 	key := fmt.Sprintf(constants.RedisFavUserPtn, userId)
-	result, err := favUserClient.ZRange(key, 0, -1).Result()
+	// 改成按时间倒叙，优先展示最后更改的视频
+	result, err := FavUserClient.ZRevRange(key, 0, -1).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -146,16 +146,16 @@ func GetUserFavVideosRedis(userId int64) (videoIdList []int64, err error) {
 		id, _ := strconv.ParseInt(s, 10, 64)
 		videoIdList = append(videoIdList, id)
 	}
-	return videoIdList, renewExpire(favUserClient, key)
+	return videoIdList, renewExpire(FavUserClient, key)
 }
 
 func GetUserFavVideosCountRedis(userId int64) (res int64, err error) {
 	key := fmt.Sprintf(constants.RedisFavUserPtn, userId)
-	result, err := favUserClient.ZCard(key).Result()
+	result, err := FavUserClient.ZCard(key).Result()
 	if err != nil {
 		return 0, err
 	}
-	err = renewExpire(favUserClient, key)
+	err = renewExpire(FavUserClient, key)
 	if err != nil {
 		return 0, err
 	}
@@ -164,7 +164,7 @@ func GetUserFavVideosCountRedis(userId int64) (res int64, err error) {
 }
 func GetVideosFavRedis(videoId int64) (videoIdList []int64, err error) {
 	key := fmt.Sprintf(constants.RedisFavVideoPtn, videoId)
-	result, err := favVideoClient.ZRange(key, 0, -1).Result()
+	result, err := FavVideoClient.ZRange(key, 0, -1).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -173,16 +173,16 @@ func GetVideosFavRedis(videoId int64) (videoIdList []int64, err error) {
 		id, _ := strconv.ParseInt(s, 10, 64)
 		videoIdList = append(videoIdList, id)
 	}
-	return videoIdList, renewExpire(favVideoClient, key)
+	return videoIdList, renewExpire(FavVideoClient, key)
 }
 
 func GetVideosFavsCountRedis(videoId int64) (res int64, err error) {
 	key := fmt.Sprintf(constants.RedisFavVideoPtn, videoId)
-	result, err := favVideoClient.ZCard(key).Result()
+	result, err := FavVideoClient.ZCard(key).Result()
 	if err != nil {
 		return 0, err
 	}
-	err = renewExpire(favVideoClient, key)
+	err = renewExpire(FavVideoClient, key)
 	if err != nil {
 		return 0, err
 	}
@@ -194,57 +194,54 @@ func ActionUserFavVideoRedis(userId, videoId int64) (err error) {
 	// note 正向, 对视频点赞
 	key := fmt.Sprintf(constants.RedisFavVideoPtn, videoId)
 	// note 如果只需要计数值, 可以使用ZINCRBY等
-	err = favVideoClient.ZAdd(key, redis.Z{
+	err = FavVideoClient.ZAdd(key, redis.Z{
 		Score:  float64(time.Now().Unix()),
 		Member: strconv.Itoa(int(userId)),
 	}).Err()
 	if err != nil {
 		return err
 	}
-	err = renewExpire(favVideoClient, key)
+	err = renewExpire(FavVideoClient, key)
 	if err != nil {
 		return err
 	}
 
 	// note 反向, 添加用户点赞过的视频
 	key = fmt.Sprintf(constants.RedisFavUserPtn, userId)
-	err = favUserClient.ZAdd(key, redis.Z{
+	err = FavUserClient.ZAdd(key, redis.Z{
 		Score:  float64(time.Now().Unix()),
 		Member: strconv.Itoa(int(videoId)),
 	}).Err()
 	if err != nil {
 		return err
 	}
-	return renewExpire(favUserClient, key)
+	return renewExpire(FavUserClient, key)
 }
 
 func ActionUserUnFavVideoRedis(userId, videoId int64) (err error) {
 	// 删除用户点赞记录
 	key := fmt.Sprintf(constants.RedisFavVideoPtn, videoId)
-
-	err = favVideoClient.ZRem(key, strconv.Itoa(int(userId))).Err()
+	err = FavVideoClient.ZRem(key, strconv.Itoa(int(userId))).Err()
 	if err != nil {
 		return err
 	}
-
-	err = renewExpire(favVideoClient, key)
+	err = renewExpire(FavVideoClient, key)
 	if err != nil {
 		return err
 	}
-
 	// note 反向, 删除
 	key = fmt.Sprintf(constants.RedisFavUserPtn, userId)
-	err = favUserClient.ZRem(key, strconv.Itoa(int(videoId))).Err()
+	err = FavUserClient.ZRem(key, strconv.Itoa(int(videoId))).Err()
 	if err != nil {
 		return err
 	}
-	return renewExpire(favUserClient, key)
+	return renewExpire(FavUserClient, key)
 }
 
 // ActionUserFollowRedis userId 关注 userId2
 func ActionUserFollowRedis(userId, userId2 int64) (err error) {
 	keyFollow, keyFan := fmt.Sprintf(constants.RedisFollowsPtn, userId), fmt.Sprintf(constants.RedisFansPtn, userId2)
-	err = followsClient.ZAdd(keyFollow, redis.Z{
+	err = FollowsClient.ZAdd(keyFollow, redis.Z{
 		Score:  float64(time.Now().Unix()),
 		Member: strconv.Itoa(int(userId2)),
 	}).Err()
@@ -253,50 +250,50 @@ func ActionUserFollowRedis(userId, userId2 int64) (err error) {
 		return err
 	}
 
-	err = renewExpire(followsClient, keyFollow)
+	err = renewExpire(FollowsClient, keyFollow)
 	if err != nil {
 		return err
 	}
 
-	err = fansClient.ZAdd(keyFan, redis.Z{
+	err = FansClient.ZAdd(keyFan, redis.Z{
 		Score:  float64(time.Now().Unix()),
 		Member: strconv.Itoa(int(userId)),
 	}).Err()
 	if err != nil {
 		return err
 	}
-	return renewExpire(fansClient, keyFan)
+	return renewExpire(FansClient, keyFan)
 }
 
 // ActionUserUnFollowRedis userId 取消关注 userId2
 func ActionUserUnFollowRedis(userId, userId2 int64) (err error) {
 	keyFollow, keyFan := fmt.Sprintf(constants.RedisFollowsPtn, userId), fmt.Sprintf(constants.RedisFansPtn, userId2)
-	err = followsClient.ZRem(keyFollow, strconv.Itoa(int(userId2))).Err()
+	err = FollowsClient.ZRem(keyFollow, strconv.Itoa(int(userId2))).Err()
 
 	if err != nil {
 		return err
 	}
 
-	err = renewExpire(followsClient, keyFollow)
+	err = renewExpire(FollowsClient, keyFollow)
 	if err != nil {
 		return err
 	}
 
-	err = fansClient.ZRem(keyFan, strconv.Itoa(int(userId))).Err()
+	err = FansClient.ZRem(keyFan, strconv.Itoa(int(userId))).Err()
 	if err != nil {
 		return err
 	}
-	return renewExpire(fansClient, keyFan)
+	return renewExpire(FansClient, keyFan)
 }
 
 // GetUserFansCountRedis 获取用户粉丝数
 func GetUserFansCountRedis(userId int64) (res int64, err error) {
 	key := fmt.Sprintf(constants.RedisFansPtn, userId)
-	result, err := fansClient.ZCard(key).Result()
+	result, err := FansClient.ZCard(key).Result()
 	if err != nil {
 		return 0, err
 	}
-	err = renewExpire(fansClient, key)
+	err = renewExpire(FansClient, key)
 	if err != nil {
 		return 0, err
 	}
@@ -307,11 +304,11 @@ func GetUserFansCountRedis(userId int64) (res int64, err error) {
 // GetUserFollowCountRedis 获取用户粉丝数
 func GetUserFollowCountRedis(userId int64) (res int64, err error) {
 	key := fmt.Sprintf(constants.RedisFansPtn, userId)
-	result, err := followsClient.ZCard(key).Result()
+	result, err := FollowsClient.ZCard(key).Result()
 	if err != nil {
 		return 0, err
 	}
-	err = renewExpire(followsClient, key)
+	err = renewExpire(FollowsClient, key)
 	if err != nil {
 		return 0, err
 	}
@@ -360,5 +357,5 @@ func randomExpire(baseTs time.Duration) (exp time.Duration) {
 
 // renewExpire todo 常数转移
 func renewExpire(client *redis.Client, key string) (err error) {
-	return fansClient.Expire(key, randomExpire(time.Hour*24)).Err()
+	return client.Expire(key, randomExpire(time.Hour*24)).Err()
 }

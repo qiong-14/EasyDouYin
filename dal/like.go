@@ -9,9 +9,9 @@ import (
 
 type Like struct {
 	gorm.Model
-	UserId  int64 `json:"user_id" gorm:"user_id"`
-	VideoId int64 `json:"video_id" gorm:"video_id"`
-	Cancel  int8  `json:"cancel" gorm:"cancel"`
+	UserId  int64 `json:"user_id" gorm:"colum:user_id"`
+	VideoId int64 `json:"video_id" gorm:"colum:video_id"`
+	Cancel  int8  `json:"cancel" gorm:"colum:cancel"`
 }
 
 func (L Like) TableName() string {
@@ -62,6 +62,20 @@ func GetLikeUserCount(ctx context.Context, videoId int64) (int64, error) {
 	}
 	//log.Printf("get %d users like video %d", cnt, videoId)
 	return cnt, nil
+}
+
+// GetLikeUserList get all user's id who like this video
+func GetLikeUserList(ctx context.Context, videId int64) ([]int64, error) {
+	var userId []int64
+	if err := DB.
+		WithContext(ctx).
+		Model(&Like{}).
+		Where(&Like{VideoId: videId, Cancel: 1}).
+		Distinct("user_id").
+		Pluck("user_id", &userId).Error; err != nil {
+		return nil, err
+	}
+	return userId, nil
 }
 
 // FindLikeVideoInfo find relation record if not find return nil

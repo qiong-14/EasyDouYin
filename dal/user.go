@@ -39,12 +39,12 @@ func CreateUser(ctx context.Context, u *User) error {
 }
 
 // GetUserById get user info by id
-func GetUserById(ctx context.Context, id int64) (*User, error) {
-	u := &User{}
+func GetUserById(ctx context.Context, id int64) (User, error) {
+	u := User{}
 	if err := DB.WithContext(ctx).
 		Model(&User{}).
 		Where("id = ?", id).
-		First(u).Error; err != nil {
+		First(&u).Error; err != nil {
 		return u, err
 	}
 	return u, nil

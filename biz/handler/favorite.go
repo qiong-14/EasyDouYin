@@ -8,6 +8,7 @@ import (
 	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/middleware"
+	"github.com/qiong-14/EasyDouYin/service"
 	"log"
 	"net/http"
 	"strconv"
@@ -47,6 +48,11 @@ func FavoriteAction(ctx context.Context, c *app.RequestContext) {
 	} else {
 		_ = dal.InsertLikeVideoInfo(ctx, userId, videoId, int8(actionType))
 	}
+	if actionType == 1 {
+		middleware.ActionUserFavVideoRedis(userId, videoId)
+	} else {
+		middleware.ActionUserUnFavVideoRedis(userId, videoId)
+	}
 	c.JSON(http.StatusOK, resp.Response{
 		StatusCode: 0,
 		StatusMsg:  fmt.Sprintf("%s video action success", []string{"like", "dislike"}[actionType-1]),
@@ -65,16 +71,7 @@ func FavoriteList(ctx context.Context, c *app.RequestContext) {
 	userId := u.(*dal.User).Id
 
 	// han bing 2023年02月16日22:31:58 做join是否会更快一点? like_videos和videos
-	videoIdList, err := dal.GetLikeVideoIdxList(ctx, userId)
-	if err != nil {
-		c.JSON(http.StatusOK, VideoListResponse{
-			Response: resp.Response{
-				StatusCode: 1,
-				StatusMsg:  "get like video id list failed",
-			},
-		})
-		return
-	}
+	videoIdList := service.GetFavVideoList(ctx, userId)
 	if len(videoIdList) == 0 {
 		c.JSON(http.StatusOK, VideoListResponse{
 			Response: resp.Response{
@@ -84,9 +81,7 @@ func FavoriteList(ctx context.Context, c *app.RequestContext) {
 		})
 		return
 	}
-
 	videosList := make([]resp.Video, len(videoIdList))
-
 	// 并发
 	var wg sync.WaitGroup
 	wg.Add(len(videoIdList))
@@ -94,8 +89,8 @@ func FavoriteList(ctx context.Context, c *app.RequestContext) {
 		go func(j int, vid int64) {
 			defer wg.Done()
 			// han bing 2023年02月16日23:36:04 vid 可能是 0, 可能会在之后的流程中被过滤
-			v := dal.GetVideoInfoById(ctx, vid)
-			user, _ := dal.GetUserById(ctx, v.OwnerId)
+			video := service.GetVideoInfo(ctx, vid)
+			user := service.GetUserInfo(ctx, userId)
 			author := resp.User{
 				Id:            user.Id,
 				Name:          user.Name,
@@ -104,22 +99,19 @@ func FavoriteList(ctx context.Context, c *app.RequestContext) {
 				IsFollow:      true,
 			}
 			playUrl, coverUrl, _ := middleware.GetUrlOfVideoAndCover(context.Background(),
-				v.Title, time.Hour)
-			favoriteCount, _ := dal.GetLikeUserCount(ctx, int64(v.ID))
+				video.Title, time.Hour)
 			videosList[j] = resp.Video{
-				Id:            int64(v.ID),
+				Id:            int64(video.ID),
 				Author:        author,
 				PlayUrl:       playUrl.String(),
 				CoverUrl:      coverUrl.String(),
-				FavoriteCount: favoriteCount,
+				FavoriteCount: service.GetVideoFavUserCount(ctx, vid),
 				CommentCount:  0,
 				IsFavorite:    true,
 			}
 		}(i, id)
-
 	}
 	wg.Wait()
-
 	c.JSON(http.StatusOK, VideoListResponse{
 		Response: resp.Response{
 			StatusCode: 0,

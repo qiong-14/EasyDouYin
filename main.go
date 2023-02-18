@@ -16,6 +16,7 @@ func main() {
 	//tools.LoadEnvFromJsonCfg("./dy_secure_config.json")
 	go service.RunMessageServer()
 	dal.Init()
+	middleware.InitRedis()
 	middleware.InitMinio(context.Background())
 	middleware.InitJwt()
 	h := server.Default(server.WithHostPorts("0.0.0.0:8080"))

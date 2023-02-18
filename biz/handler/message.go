@@ -18,7 +18,7 @@ type ChatResponse struct {
 	MessageList []resp.Message `json:"message_list"`
 }
 
-// 发送消息
+// MessageAction 发送消息, see also MessageChat
 func MessageAction(ctx context.Context, c *app.RequestContext) {
 	u, _ := c.Get(middleware.IdentityKey)
 	toUserId := c.Query("to_user_id")
@@ -49,7 +49,7 @@ func MessageAction(ctx context.Context, c *app.RequestContext) {
 		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 }
 
-// 获取聊天记录
+// MessageChat 获取聊天记录
 func MessageChat(ctx context.Context, c *app.RequestContext) {
 	u, _ := c.Get(middleware.IdentityKey)
 	toUserId := c.Query("to_user_id")
@@ -65,6 +65,8 @@ func MessageChat(ctx context.Context, c *app.RequestContext) {
 			c.JSON(http.StatusOK, ChatResponse{Response: resp.Response{StatusCode: 0}, MessageList: []resp.Message{}})
 			return
 		}
+		// han bing messageResp 长度可知, 请提前为其分配内存
+		// messagesResp := make([]resp.Message, len(messages))
 		messagesResp := []resp.Message{}
 		for _, msg := range messages {
 			messagesResp = append(messagesResp, resp.Message{

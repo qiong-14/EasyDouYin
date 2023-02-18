@@ -42,7 +42,7 @@ func CreateVideoInfo(ctx context.Context, v *VideoInfo) error {
 	return nil
 }
 
-// GetVideoStreamInfo 先返回时间倒序
+// GetVideoStreamInfo 先返回时间倒序, 这个靠 数据库和它自己的缓存扛吧, 不优化了
 func GetVideoStreamInfo(ctx context.Context, lastTime int64, limit int) (videos []VideoInfo) {
 	videos = make([]VideoInfo, limit)
 	tx := DB.WithContext(ctx).

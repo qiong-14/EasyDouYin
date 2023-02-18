@@ -13,7 +13,10 @@ func GetFavVideoList(ctx context.Context, userId int64) []int64 {
 	if videoIdList == nil || err != nil {
 		videoIdList, _ = dal.GetLikeVideoIdxList(ctx, userId)
 		for _, vId := range videoIdList {
-			middleware.ActionUserFavVideoRedis(userId, vId)
+			err := middleware.ActionUserFavVideoRedis(userId, vId)
+			if err != nil {
+				hlog.Errorf("%#v", err)
+			}
 		}
 	}
 	return videoIdList
@@ -29,7 +32,10 @@ func GetFavVideoCount(ctx context.Context, userId int64) int64 {
 			return 0
 		}
 		for _, id := range videoList {
-			middleware.ActionUserFavVideoRedis(userId, id)
+			err := middleware.ActionUserFavVideoRedis(userId, id)
+			if err != nil {
+				hlog.Errorf("%#v", err)
+			}
 		}
 		cnt = int64(len(videoList))
 	}
@@ -41,24 +47,31 @@ func GetVideoInfo(ctx context.Context, videoId int64) dal.VideoInfo {
 	videoInfo, err := middleware.GetVideoInfoRedis(videoId)
 	if err != nil {
 		videoInfo = dal.GetVideoInfoById(ctx, videoId)
-		middleware.SetVideoInfoRedis(videoInfo)
+
+		err := middleware.SetVideoInfoRedis(videoInfo)
+		if err != nil {
+			hlog.Errorf("%#v", err)
+		}
 	}
 	return videoInfo
 }
 
-// GetVideoFavUserCount 通过视频ID获取喜欢用户数量
-func GetVideoFavUserCount(ctx context.Context, videoId int64) int64 {
+// GetVideoFavUserCount 通过视频ID获取喜欢用户数量, 增加err
+func GetVideoFavUserCount(ctx context.Context, videoId int64) (int64, error) {
 	cnt, err := middleware.GetVideosFavsCountRedis(videoId)
 	if err != nil {
 		userId, err := dal.GetLikeUserList(ctx, videoId)
 		if err != nil {
 			hlog.CtxErrorf(ctx, "can't get like user list , videoId:%d", videoId)
-			return 0
+			return 0, err
 		}
 		for _, id := range userId {
-			middleware.ActionUserFavVideoRedis(id, videoId)
+			err := middleware.ActionUserFavVideoRedis(id, videoId)
+			if err != nil {
+				hlog.Errorf("%#v", err)
+			}
 		}
 		cnt = int64(len(userId))
 	}
-	return cnt
+	return cnt, nil
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/hertz-contrib/jwt"
 	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/middleware"
@@ -41,7 +42,7 @@ func getCoverAndUpload(ctx context.Context, filePath string, userId int64) error
 // Publish check token then save upload file to public directory
 func Publish(ctx context.Context, c *app.RequestContext) {
 	userId := 0
-	if identity, exist := c.Get("identity"); exist {
+	if identity, exist := c.Get(jwt.IdentityKey); exist {
 		// 获取一下
 		if user, exist := identity.(*dal.User); exist {
 			userId = int(user.Id)

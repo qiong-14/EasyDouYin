@@ -22,7 +22,7 @@ func (m Message) TableName() string {
 	return constants.MessageTableName
 }
 
-// Insert message
+// InsertMessage Insert message， see also GetMessage
 func InsertMessage(ctx context.Context, m *Message) error {
 	if err := DB.
 		WithContext(ctx).
@@ -33,7 +33,7 @@ func InsertMessage(ctx context.Context, m *Message) error {
 	return nil
 }
 
-// Get message by to_user_id,from_user_id
+// GetMessage Get message by to_user_id,from_user_id
 func GetMessage(ctx context.Context, toUserId int64, FromUserId int64, preMsgTime int64) ([]Message, error) {
 	messages := []Message{}
 	if preMsgTime == 0 {

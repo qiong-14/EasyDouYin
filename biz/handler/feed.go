@@ -9,6 +9,7 @@ import (
 	"github.com/qiong-14/EasyDouYin/constants"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/middleware"
+	"github.com/qiong-14/EasyDouYin/service"
 	"strconv"
 	"sync"
 	"time"
@@ -31,12 +32,13 @@ func getVideoEntities(ctx context.Context, videoInfos []dal.VideoInfo) []resp.Vi
 			defer wg.Done()
 
 			// 查询视频用户
-			user, _ := dal.GetUserById(ctx, videoInfo.OwnerId)
+			user, _ := service.GetUserInfo(ctx, videoInfo.OwnerId)
 
 			playUrl, coverUrl, _ := middleware.GetUrlOfVideoAndCover(context.Background(), videoInfo.Title, time.Hour)
 
 			// 增加用户喜欢的查询
-			favoriteCount, _ := dal.GetLikeUserCount(ctx, int64(videoInfo.ID))
+			favoriteCount, _ := service.GetVideoFavUserCount(ctx, int64(videoInfo.ID))
+			//favoriteCount, _ := dal.GetLikeUserCount(ctx, int64(videoInfo.ID))
 
 			videosList[resPos] = resp.Video{
 				Id: int64(videoInfo.ID),

@@ -56,7 +56,7 @@ func UserInfo(ctx context.Context, c *app.RequestContext) {
 		id, _ = strconv.ParseInt(idStr, 10, 64)
 	}
 
-	if user := service.GetUserInfo(ctx, id); user != dal.InvalidUser {
+	if user, _ := service.GetUserInfo(ctx, id); user != dal.InvalidUser {
 		favoriteCount := service.GetFavVideoCount(ctx, user.Id)
 		c.JSON(http.StatusOK, resp.UserResponse{
 			Response: resp.Response{StatusCode: 0},

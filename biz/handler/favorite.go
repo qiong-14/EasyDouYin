@@ -90,7 +90,7 @@ func FavoriteList(ctx context.Context, c *app.RequestContext) {
 			defer wg.Done()
 			// han bing 2023年02月16日23:36:04 vid 可能是 0, 可能会在之后的流程中被过滤
 			video := service.GetVideoInfo(ctx, vid)
-			user := service.GetUserInfo(ctx, userId)
+			user, _ := service.GetUserInfo(ctx, userId)
 			author := resp.User{
 				Id:            user.Id,
 				Name:          user.Name,
@@ -100,12 +100,14 @@ func FavoriteList(ctx context.Context, c *app.RequestContext) {
 			}
 			playUrl, coverUrl, _ := middleware.GetUrlOfVideoAndCover(context.Background(),
 				video.Title, time.Hour)
+			// ignore err
+			favCount, _ := service.GetVideoFavUserCount(ctx, vid)
 			videosList[j] = resp.Video{
 				Id:            int64(video.ID),
 				Author:        author,
 				PlayUrl:       playUrl.String(),
 				CoverUrl:      coverUrl.String(),
-				FavoriteCount: service.GetVideoFavUserCount(ctx, vid),
+				FavoriteCount: favCount,
 				CommentCount:  0,
 				IsFavorite:    true,
 			}

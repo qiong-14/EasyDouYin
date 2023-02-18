@@ -22,7 +22,7 @@ type VideoInfo struct {
 }
 
 var InvalidVideo = VideoInfo{
-	Model: gorm.Model{ID: -1},
+	Model: gorm.Model{ID: 0},
 }
 
 func (v *VideoInfo) VideoIsValid() bool {

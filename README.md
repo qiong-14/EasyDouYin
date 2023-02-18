@@ -111,3 +111,6 @@ curl --location --request GET 'localhost:8080/douyin/ping' --header 'Authorizati
 # {"message":"user_id:4"}
 ```
 
+### 关于Redis的使用
+
+See in [Redis使用文档](./UseRedis.md)

@@ -67,7 +67,7 @@ func MessageChat(ctx context.Context, c *app.RequestContext) {
 		}
 		// han bing messageResp 长度可知, 请提前为其分配内存
 		// messagesResp := make([]resp.Message, len(messages))
-		messagesResp := []resp.Message{}
+		var messagesResp []resp.Message
 		for _, msg := range messages {
 			messagesResp = append(messagesResp, resp.Message{
 				Id:         msg.Id,

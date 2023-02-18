@@ -35,7 +35,7 @@ func InsertMessage(ctx context.Context, m *Message) error {
 
 // GetMessage Get message by to_user_id,from_user_id
 func GetMessage(ctx context.Context, toUserId int64, FromUserId int64, preMsgTime int64) ([]Message, error) {
-	messages := []Message{}
+	var messages []Message
 	if preMsgTime == 0 {
 		// 返回全部聊天记录
 		if err := DB.WithContext(ctx).Model(&Message{}).

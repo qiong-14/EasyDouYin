@@ -18,7 +18,6 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	defer hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
 		c.Response.StatusCode(),
 		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
-
 	username := c.Query("username")
 	password := c.Query("password")
 

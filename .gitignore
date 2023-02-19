@@ -1,6 +1,7 @@
 EasyDouYin*
 .idea/
 .vscode/
+result/
 .DS_Store
 dy_secure_config*
 *.mp4

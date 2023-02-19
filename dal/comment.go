@@ -20,16 +20,17 @@ func (C Comment) TableName() string {
 }
 
 // InsertCommentVideoInfo insert user comment video info
-func InsertCommentVideoInfo(ctx context.Context, userId, videoId int64, commentText string) error {
+func InsertCommentVideoInfo(ctx context.Context, userId, videoId int64, commentText string) (int64, error) {
+	comment := Comment{UserId: userId, VideoId: videoId, CommentText: commentText}
 	if err := DB.
 		WithContext(ctx).
 		Model(&Comment{}).
-		Create(&Comment{UserId: userId, VideoId: videoId, CommentText: commentText}).Error; err != nil {
+		Create(&comment).Error; err != nil {
 		log.Println("insert comment failed")
-		return err
+		return 0, err
 	}
 	log.Println("insert comment success")
-	return nil
+	return int64(comment.ID), nil
 }
 
 // GetCommentVideoIdxList return comment id lists of video by update time

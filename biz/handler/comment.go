@@ -40,6 +40,7 @@ func CommentAction(ctx context.Context, c *app.RequestContext) {
 	u, err := dal.GetUserById(ctx, userId)
 	if err != nil {
 		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+		return
 	}
 	// get video id
 	videoId, err := strconv.ParseInt(c.Query("video_id"), 10, 64)
@@ -61,7 +62,7 @@ func CommentAction(ctx context.Context, c *app.RequestContext) {
 	if actionType == 1 {
 		//get commentText
 		commentText = c.Query("comment_text")
-		dal.InsertCommentVideoInfo(ctx, userId, videoId, commentText)
+		commentId, _ = dal.InsertCommentVideoInfo(ctx, userId, videoId, commentText)
 	} else if actionType == 2 {
 
 		//get commentId

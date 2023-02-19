@@ -53,7 +53,7 @@ func getVideoEntities(ctx context.Context, videoInfos []dal.VideoInfo) []resp.Vi
 				CoverUrl:      coverUrl.String(),
 				FavoriteCount: favoriteCount,
 				CommentCount:  0,
-				IsFavorite:    true,
+				IsFavorite:    false,
 			}
 		}(idx, info)
 

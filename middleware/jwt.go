@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/hertz-contrib/jwt"
@@ -9,6 +8,7 @@ import (
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/tools"
 
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -35,12 +35,16 @@ func InitJwt() {
 			payloads := resp.Payload{}
 			jsonPayloads, _ := base64.RawURLEncoding.DecodeString(strings.Split(token, ".")[1])
 			err = json.Unmarshal(jsonPayloads, &payloads)
+			if err != nil {
+				panic(err)
+			}
 			c.JSON(http.StatusOK, resp.UserLoginResponse{
 				Response: resp.Response{StatusCode: 0, StatusMsg: "login success"},
 				UserId:   payloads.Identity,
 				Token:    token,
 			})
-			if err != nil {
+			// UserId存入redis
+			if err = SetUserIdRedis(payloads.Identity, token); err != nil {
 				panic(err)
 			}
 		},

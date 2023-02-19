@@ -29,7 +29,7 @@ const (
 )
 
 const (
-	RedisTokenPtn     = "token:user:%d"
+	RedisUserIdPtn    = "Id:token:%s"
 	RedisUserInfoPtn  = "info:user:%d"
 	RedisVideoInfoPtn = "info:video:%d"
 	RedisFavUserPtn   = "fav:user:%d"

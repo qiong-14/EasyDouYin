@@ -6,18 +6,19 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-redis/redis"
-	"github.com/qiong-14/EasyDouYin/constants"
-	"github.com/qiong-14/EasyDouYin/dal"
 	"math/rand"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/go-redis/redis"
+	"github.com/qiong-14/EasyDouYin/constants"
+	"github.com/qiong-14/EasyDouYin/dal"
 )
 
 var (
 	clients         [16]*redis.Client
-	TokenClient     *redis.Client
+	UserIdClient    *redis.Client
 	UserInfoClient  *redis.Client
 	VideoInfoClient *redis.Client
 	FavUserClient   *redis.Client
@@ -44,7 +45,7 @@ func GetInstance(bucket int) *redis.Client {
 }
 
 func InitRedis() {
-	TokenClient = GetInstance(0)
+	UserIdClient = GetInstance(0)
 	UserInfoClient = GetInstance(1)
 	VideoInfoClient = GetInstance(2)
 	FavUserClient = GetInstance(3)
@@ -56,17 +57,18 @@ func InitRedis() {
 
 /*biz start*/
 
-// GetUserTokenRedis token cache, see also SetUserTokenRedis
-func GetUserTokenRedis(userId int64) (token string, err error) {
-	token, err = TokenClient.Get(fmt.Sprintf(constants.RedisTokenPtn, userId)).Result()
+// GetUserIdRedis Id cache, see also SetUserIdRedis
+func GetUserIdRedis(token string) (userId int64, err error) {
+	Id, err := UserIdClient.Get(fmt.Sprintf(constants.RedisUserIdPtn, token)).Result()
 	if err == redis.Nil {
-		return "", err
+		return 0, err
 	}
-	return token, nil
+	userId, _ = strconv.ParseInt(Id, 10, 64)
+	return userId, nil
 }
 
-func SetUserTokenRedis(userId int64, token string) error {
-	if err := TokenClient.Set(fmt.Sprintf(constants.RedisTokenPtn, userId), token, time.Hour*24).Err(); err != nil {
+func SetUserIdRedis(userId int64, token string) error {
+	if err := UserIdClient.Set(fmt.Sprintf(constants.RedisUserIdPtn, token), userId, time.Hour*24).Err(); err != nil {
 		return err
 	}
 	return nil

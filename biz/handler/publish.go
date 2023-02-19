@@ -3,6 +3,11 @@ package handler
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
+	"strconv"
+	"time"
+
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -10,10 +15,6 @@ import (
 	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/middleware"
-	"os"
-	"path/filepath"
-	"strconv"
-	"time"
 )
 
 type VideoListResponse struct {
@@ -41,14 +42,11 @@ func getCoverAndUpload(ctx context.Context, filePath string, userId int64) error
 
 // Publish check token then save upload file to public directory
 func Publish(ctx context.Context, c *app.RequestContext) {
-	userId := 0
-	if identity, exist := c.Get(jwt.IdentityKey); exist {
-		// 获取一下
-		if user, exist := identity.(*dal.User); exist {
-			userId = int(user.Id)
-		}
+	userId, err := middleware.GetUserIdRedis(jwt.GetToken(ctx, c))
+	if err != nil {
+		return
 	}
-	user, err := dal.GetUserById(ctx, int64(userId))
+	user, err := dal.GetUserById(ctx, userId)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "%#v", err)
 		c.JSON(consts.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
@@ -78,7 +76,7 @@ func Publish(ctx context.Context, c *app.RequestContext) {
 	}
 
 	// 上传视频
-	err = getCoverAndUpload(ctx, saveFile, int64(userId))
+	err = getCoverAndUpload(ctx, saveFile, userId)
 	if err != nil {
 		c.JSON(consts.StatusOK, resp.Response{
 			StatusCode: 1,

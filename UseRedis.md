@@ -6,15 +6,16 @@
 
 ## 用户鉴权
 
-> 当用户量极大且分布式时，可以用Redis缓存用户Token，这个需求可以做
->
+> 当用户量极大且分布式时，可以用Redis缓存用户Id，这个需求可以做
+
+
 > **分配DB:** 0
 >
-> Token过期应当自动删除, 考虑用string
+> Token过期应当Id自动删除
 >
-> key命名：`token:user:<userid>`
+> key命名：`userid:token:<token>`
 >
-> 值：Token字符串
+> 值：UserId
 
 ## 用户信息
 

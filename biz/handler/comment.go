@@ -11,6 +11,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/hertz-contrib/jwt"
 	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/middleware"
@@ -32,8 +33,14 @@ func CommentAction(ctx context.Context, c *app.RequestContext) {
 		c.Response.StatusCode(),
 		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 	// get user id
-	u, _ := c.Get(middleware.IdentityKey)
-	userId := u.(*dal.User).Id
+	userId, err := middleware.GetUserIdRedis(jwt.GetToken(ctx, c))
+	if err != nil {
+		return
+	}
+	u, err := dal.GetUserById(ctx, userId)
+	if err != nil {
+		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+	}
 	// get video id
 	videoId, err := strconv.ParseInt(c.Query("video_id"), 10, 64)
 	if err != nil {
@@ -68,8 +75,8 @@ func CommentAction(ctx context.Context, c *app.RequestContext) {
 	}
 	// get userById
 	user := resp.User{
-		Id:            u.(*dal.User).Id,
-		Name:          u.(*dal.User).Name,
+		Id:            u.Id,
+		Name:          u.Name,
 		FollowCount:   0,
 		FollowerCount: 0,
 		IsFollow:      true,

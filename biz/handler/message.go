@@ -8,6 +8,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/hertz-contrib/jwt"
 	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/middleware"
@@ -20,9 +21,11 @@ type ChatResponse struct {
 
 // MessageAction 发送消息, see also MessageChat
 func MessageAction(ctx context.Context, c *app.RequestContext) {
-	u, _ := c.Get(middleware.IdentityKey)
+	userIdA, err := middleware.GetUserIdRedis(jwt.GetToken(ctx, c))
+	if err != nil {
+		return
+	}
 	toUserId := c.Query("to_user_id")
-	userIdA := u.(*dal.User).Id
 	userIdB, _ := strconv.ParseInt(toUserId, 10, 64)
 	actionType64, _ := strconv.ParseInt(c.Query("action_type"), 10, 32)
 	actionType := int32(actionType64)
@@ -51,9 +54,11 @@ func MessageAction(ctx context.Context, c *app.RequestContext) {
 
 // MessageChat 获取聊天记录
 func MessageChat(ctx context.Context, c *app.RequestContext) {
-	u, _ := c.Get(middleware.IdentityKey)
+	userIdA, err := middleware.GetUserIdRedis(jwt.GetToken(ctx, c))
+	if err != nil {
+		return
+	}
 	toUserId := c.Query("to_user_id")
-	userIdA := u.(*dal.User).Id
 	userIdB, _ := strconv.ParseInt(toUserId, 10, 64)
 	preMsgTime, _ := strconv.ParseInt(c.Query("pre_msg_time"), 10, 64)
 	if user, err := dal.GetUserById(ctx, userIdA); err != nil {

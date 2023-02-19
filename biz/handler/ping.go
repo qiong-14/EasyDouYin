@@ -8,6 +8,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/hertz-contrib/jwt"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/middleware"
 )
@@ -15,7 +16,9 @@ import (
 // Ping .
 func Ping(ctx context.Context, c *app.RequestContext) {
 	user, _ := c.Get(middleware.IdentityKey)
+	token := jwt.GetToken(ctx, c)
+	userId, _ := middleware.GetUserIdRedis(token)
 	c.JSON(200, utils.H{
-		"message": fmt.Sprintf("user_id:%v", user.(*dal.User).Id),
+		"message": fmt.Sprintf("user_id:%v redis_user_id: %v token:%v", user.(*dal.User).Id, userId, token),
 	})
 }

@@ -3,17 +3,19 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"github.com/qiong-14/EasyDouYin/biz/resp"
-	"github.com/qiong-14/EasyDouYin/dal"
-	"github.com/qiong-14/EasyDouYin/middleware"
-	"github.com/qiong-14/EasyDouYin/service"
 	"log"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/hertz-contrib/jwt"
+	"github.com/qiong-14/EasyDouYin/biz/resp"
+	"github.com/qiong-14/EasyDouYin/dal"
+	"github.com/qiong-14/EasyDouYin/middleware"
+	"github.com/qiong-14/EasyDouYin/service"
 )
 
 // FavoriteAction change like relation to like_video db
@@ -22,8 +24,10 @@ func FavoriteAction(ctx context.Context, c *app.RequestContext) {
 		c.Response.StatusCode(),
 		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 	// get user id
-	u, _ := c.Get(middleware.IdentityKey)
-	userId := u.(*dal.User).Id
+	userId, err := middleware.GetUserIdRedis(jwt.GetToken(ctx, c))
+	if err != nil {
+		return
+	}
 
 	// get video id
 	videoId, err := strconv.ParseInt(c.Query("video_id"), 10, 64)
@@ -67,8 +71,10 @@ func FavoriteList(ctx context.Context, c *app.RequestContext) {
 		c.Response.StatusCode(),
 		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 	// get user id
-	u, _ := c.Get(middleware.IdentityKey)
-	userId := u.(*dal.User).Id
+	userId, err := middleware.GetUserIdRedis(jwt.GetToken(ctx, c))
+	if err != nil {
+		return
+	}
 
 	// han bing 2023年02月16日22:31:58 做join是否会更快一点? like_videos和videos
 	videoIdList := service.GetFavVideoList(ctx, userId)

@@ -2,11 +2,14 @@ package handler
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/hertz-contrib/jwt"
 	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/dal"
-	"net/http"
+	"github.com/qiong-14/EasyDouYin/middleware"
 )
 
 type UserListResponse struct {
@@ -16,8 +19,11 @@ type UserListResponse struct {
 
 // RelationAction no practical effect, just check if token is valid
 func RelationAction(ctx context.Context, c *app.RequestContext) {
-	userId, _ := c.Get("user_id")
-	if _, err := dal.GetUserById(ctx, userId.(int64)); err == nil {
+	userId, err := middleware.GetUserIdRedis(jwt.GetToken(ctx, c))
+	if err != nil {
+		return
+	}
+	if _, err := dal.GetUserById(ctx, userId); err == nil {
 		c.JSON(http.StatusOK, resp.Response{StatusCode: 0})
 	} else {
 		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})

@@ -18,6 +18,7 @@ func Ping(ctx context.Context, c *app.RequestContext) {
 	user, _ := c.Get(middleware.IdentityKey)
 	token := jwt.GetToken(ctx, c)
 	userId, _ := middleware.GetUserIdRedis(token)
+
 	c.JSON(200, utils.H{
 		"message": fmt.Sprintf("user_id:%v redis_user_id: %v token:%v", user.(*dal.User).Id, userId, token),
 	})

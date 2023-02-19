@@ -6,6 +6,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/qiong-14/EasyDouYin/biz/resp"
+	"github.com/qiong-14/EasyDouYin/constants"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/middleware"
 	"github.com/qiong-14/EasyDouYin/service"
@@ -20,7 +21,22 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
 	username := c.Query("username")
 	password := c.Query("password")
-
+	if constants.CheckUserRegisterInfo {
+		pass1, pass2 := tools.CheckUserRegisterInfo(username, password)
+		info := ""
+		if !pass1 {
+			info += " username form incorrect "
+		}
+		if !pass2 {
+			info += " weak password"
+		}
+		if len(info) > 0 {
+			c.JSON(consts.StatusOK, resp.UserLoginResponse{
+				Response: resp.Response{StatusCode: 1, StatusMsg: info},
+			})
+			return
+		}
+	}
 	// 查找用户名是否已经注册
 	u, err := dal.GetUserByName(ctx, username)
 	if u.Name == username {

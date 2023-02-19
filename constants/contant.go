@@ -1,7 +1,6 @@
 package constants
 
 const (
-	// UserTableName mysql table name
 	UserTableName         = "user"
 	VideoTableName        = "videos"
 	LikeVideoTableName    = "like_video"
@@ -9,6 +8,19 @@ const (
 	CommentVideoTableName = "comment_video"
 	FeedVideosCount       = 20
 	MySQLDefaultDSN       = "readygo:123456@tcp(localhost:9910)/douyindb?charset=utf8&parseTime=True&loc=Local"
+)
+const (
+	CheckUserRegisterInfo = false
+	CheckUserName         = true
+	// CheckUserPassword 检查用户密码强度大于该值
+	// 90 以上: 非常安全
+	// 80 ~ 90: 安全
+	// 70 ~ 80: 非常强
+	// 60 ~ 70: 强
+	// 50 ~ 60: 一般
+	// 25 ~ 50: 弱
+	// 0 ~ 25: 非常弱
+	CheckUserPassword = 90
 )
 
 const (

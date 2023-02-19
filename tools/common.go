@@ -13,17 +13,28 @@ import (
 	"strings"
 )
 
+func CheckUserRegisterInfo(name string, pwd string) (bool, bool) {
+	pass := CheckPasswordStrength(pwd) >= constants.CheckUserPassword
+	if constants.CheckUserName {
+		return CheckUserNameForm(name), pass
+	}
+	return true, pass
+}
+
 // CheckUserNameForm 检查用户用户名（邮箱格式）是否正确
 func CheckUserNameForm(name string) bool {
-	reg := regexp.MustCompile(`^([a-zA-Z\\d][\\w-]{2,})@(\\w{2,})\\.([a-z]{2,})(\\.[a-z]{2,})?$`)
+	reg := regexp.MustCompile(`^([a-zA-Z\d][\w-]{2,})@(\w{2,})\.([a-z]{2,})(\.[a-z]{2,})?$`)
 	return reg.Match([]byte(name))
 }
 
 // CheckPasswordStrength 密码强度评分
-// >= 90: 非常安全 >= 80: 安全（Secure）
-// >= 70: 非常强 >= 60: 强（Strong）
-// >= 50: 一般（Average）
-// >= 25: 弱（Weak） >= 0: 非常弱
+// 90 以上: 非常安全
+// 80 ~ 90: 安全
+// 70 ~ 80: 非常强
+// 60 ~ 70: 强
+// 50 ~ 60: 一般
+// 25 ~ 50: 弱
+// 0 ~ 25: 非常弱
 func CheckPasswordStrength(password string) int {
 	var count int
 	pwd := []byte(password)

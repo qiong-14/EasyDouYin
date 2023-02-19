@@ -5,6 +5,8 @@ const (
 	VideoTableName        = "videos"
 	LikeVideoTableName    = "like_video"
 	MessageTableName      = "message"
+	UserRelationName   = "user_relation"
+	UserInfoName       = "user_info"
 	CommentVideoTableName = "comment_video"
 	FeedVideosCount       = 20
 	MySQLDefaultDSN       = "readygo:123456@tcp(localhost:9910)/douyindb?charset=utf8&parseTime=True&loc=Local"

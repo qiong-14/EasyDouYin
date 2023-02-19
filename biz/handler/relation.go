@@ -48,12 +48,38 @@ func FollowList(ctx context.Context, c *app.RequestContext) {
 
 // FollowerList all users have same follower list
 func FollowerList(ctx context.Context, c *app.RequestContext) {
-	c.JSON(http.StatusOK, UserListResponse{
-		Response: resp.Response{
-			StatusCode: 0,
-		},
-		UserList: []resp.User{DemoUser},
-	})
+	u, _ := c.Get(middleware.IdentityKey)
+	user_id := u.(*dal.User).Id
+	list := []dal.User_info{}
+	var err error
+	followerIds, err := dal.GetFollowerList(ctx, user_id)
+	if err != nil {
+		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+	} else {
+		if list, err = dal.GetAllUserInfo(ctx, followerIds); err != nil {
+			c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+		} else {
+			respList := []resp.User{}
+			for _, info := range list {
+				respList = append(respList, resp.User{
+					Id:            info.UserId,
+					Name:          info.Name,
+					FollowCount:   info.FollowCount,
+					FollowerCount: info.FollowerCount,
+					IsFollow:      info.Isfollow,
+					FavoriteCount: info.FavoriteCount,
+					WorkCount:     info.WorkCount,
+				})
+			}
+			c.JSON(http.StatusOK, UserListResponse{
+				Response: resp.Response{
+					StatusCode: 0,
+				},
+				UserList: respList,
+			})
+		}
+	}
+
 	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
 		c.Response.StatusCode(),
 		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())
@@ -61,12 +87,38 @@ func FollowerList(ctx context.Context, c *app.RequestContext) {
 
 // FriendList all users have same friend list
 func FriendList(ctx context.Context, c *app.RequestContext) {
-	c.JSON(http.StatusOK, UserListResponse{
-		Response: resp.Response{
-			StatusCode: 0,
-		},
-		UserList: []resp.User{DemoUser},
-	})
+	u, _ := c.Get(middleware.IdentityKey)
+	user_id := u.(*dal.User).Id
+	list := []dal.User_info{}
+	var err error
+	friendIds, err := dal.GetFriendList(ctx, user_id)
+	if err != nil {
+		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+	} else {
+		if list, err = dal.GetAllUserInfo(ctx, friendIds); err != nil {
+			c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+		} else {
+			respList := []resp.User{}
+			for _, info := range list {
+				respList = append(respList, resp.User{
+					Id:            info.UserId,
+					Name:          info.Name,
+					FollowCount:   info.FollowCount,
+					FollowerCount: info.FollowerCount,
+					IsFollow:      info.Isfollow,
+					FavoriteCount: info.FavoriteCount,
+					WorkCount:     info.WorkCount,
+				})
+			}
+			c.JSON(http.StatusOK, UserListResponse{
+				Response: resp.Response{
+					StatusCode: 0,
+				},
+				UserList: respList,
+			})
+		}
+	}
+
 	hlog.CtxTracef(ctx, "status=%d method=%s full_path=%s client_ip=%s host=%s",
 		c.Response.StatusCode(),
 		c.Request.Header.Method(), c.Request.URI().PathOriginal(), c.ClientIP(), c.Request.Host())

@@ -23,7 +23,6 @@ func TestMessageServer(t *testing.T) {
 			Status(http.StatusOK).
 			JSON().Object()
 		messageActionResp.Value("status_code").Number().Equal(0)
-		time.Sleep(time.Second)
 	}
 	var preMsgTime int64
 	preMsgTime = 0
@@ -61,8 +60,7 @@ func TestMessageServer(t *testing.T) {
 		message.Value("from_user_id").Number().Gt(0)
 		message.Value("content").String().Length().Gt(0)
 	}
-	preMsgTime = 1000 * time.Now().Unix()
-	time.Sleep(time.Second)
+	preMsgTime = time.Now().UnixMilli()
 
 	// testUserB send to testUserA
 	for i := 0; i < 3; i++ {
@@ -75,7 +73,6 @@ func TestMessageServer(t *testing.T) {
 			Status(http.StatusOK).
 			JSON().Object()
 		messageActionResp.Value("status_code").Number().Equal(0)
-		time.Sleep(time.Second)
 	}
 
 	// testUserA get chat message with pre_msg_time again

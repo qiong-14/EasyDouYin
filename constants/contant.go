@@ -5,6 +5,8 @@ const (
 	VideoTableName        = "videos"
 	LikeVideoTableName    = "like_video"
 	MessageTableName      = "message"
+	UserRelationName   = "user_relation"
+	UserInfoName       = "user_info"
 	CommentVideoTableName = "comment_video"
 	FollowTableName       = "follows"
 	FeedVideosCount       = 20

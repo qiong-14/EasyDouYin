@@ -124,6 +124,7 @@ func FollowerList(ctx context.Context, c *app.RequestContext) {
 		},
 		UserList: followerUserList,
 	})
+
 }
 
 // FriendList
@@ -156,4 +157,5 @@ func FriendList(ctx context.Context, c *app.RequestContext) {
 		},
 		UserList: friendUserList,
 	})
+
 }

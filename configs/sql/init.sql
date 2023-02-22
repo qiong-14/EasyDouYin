@@ -52,17 +52,36 @@ create table if not exists `comment_video`
 
 create table if not exists user_relation
 (
-    `id`              bigint primary key auto_increment comment '用户ID',
+    `user_id`         bigint primary key auto_increment comment 'User id',
     `created_at`      timestamp not null default current_timestamp comment 'User account create time',
     `updated_at`      timestamp not null default current_timestamp on update current_timestamp comment 'User account update time',
     `deleted_at`      timestamp null     default null comment 'User account delete time',
-    `followers_count` int comment '粉丝列表人数',
-    `follows_count`   int comment '关注列表人数',
-    `likes_videos`    longtext comment '喜欢的视频列表',
-    `followers`       longtext comment '粉丝列表, JSON表示',
-    `follows`         longtext comment '关注列表, JSON表示'
+    `name`            varchar(128) not null default '' comment 'User name',
+    `is_follow`       boolean comment 'If follow',
+    `follower_id`     int comment 'Follower id',
+    `follow_count`    int comment 'Follow count',
+    `follower_count`  int comment 'Follower count'
+)engine = InnoDB;
 
-) comment '用户社交信息表';
+create table if not exists user_info
+(
+    `user_id`               bigint primary key auto_increment comment 'User id',
+    `created_at`            timestamp not null default current_timestamp comment 'User account create time',
+    `updated_at`            timestamp not null default current_timestamp on update current_timestamp comment 'User account update time',
+    `deleted_at`            timestamp null     default null comment 'User account delete time',
+    `name`                  varchar(128) not null default '' comment 'User name',
+    `is_follow`             boolean comment 'If follow',
+    `follower_id`           int comment 'Follower id',
+    `follow_count`          int comment 'Follow count',
+    `follower_count`        int comment 'Follower count',
+    `avatar`                varchar(255) comment 'User avatar',
+    `background_image`      varchar(255) comment 'User background_image',
+    `signature`             varchar(255) comment 'Signature',
+    `total_favorited`       int comment 'Total favorited',
+    `work_count`            int comment 'Work count',
+    `favorite_count`        int comment 'Favorite count'
+)engine = InnoDB; 
+
 
 create table if not exists follows
 (

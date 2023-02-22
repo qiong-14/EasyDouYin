@@ -40,7 +40,7 @@ func MessageAction(ctx context.Context, c *app.RequestContext) {
 			ToUserId:   userIdB,
 			FromUserId: user.Id,
 			Content:    content,
-			CreateTime: 1000 * time.Now().Unix(),
+			CreateTime: time.Now().UnixMilli(),
 		}
 		if err = dal.InsertMessage(ctx, &curMessage); err != nil {
 			return

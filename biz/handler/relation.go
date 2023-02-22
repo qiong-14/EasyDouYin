@@ -71,14 +71,12 @@ func FollowList(ctx context.Context, c *app.RequestContext) {
 
 	userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
 
-	log.Println(userId)
+	//log.Println(c.Request)
 
 	if err != nil {
 		return
 	}
-	if _, err := dal.GetUserById(ctx, userId); err == nil {
-		c.JSON(http.StatusOK, resp.Response{StatusCode: 0})
-	} else {
+	if _, err := dal.GetUserById(ctx, userId); err != nil {
 		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 	}
 
@@ -106,15 +104,12 @@ func FollowerList(ctx context.Context, c *app.RequestContext) {
 
 	////test if token is expired
 	//_, err := middleware.GetUserIdRedis(jwt.GetToken(ctx, c))
-
 	userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
 
 	if err != nil {
 		return
 	}
-	if _, err := dal.GetUserById(ctx, userId); err == nil {
-		c.JSON(http.StatusOK, resp.Response{StatusCode: 0})
-	} else {
+	if _, err := dal.GetUserById(ctx, userId); err != nil {
 		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 	}
 
@@ -146,9 +141,7 @@ func FriendList(ctx context.Context, c *app.RequestContext) {
 	if err != nil {
 		return
 	}
-	if _, err := dal.GetUserById(ctx, userId); err == nil {
-		c.JSON(http.StatusOK, resp.Response{StatusCode: 0})
-	} else {
+	if _, err := dal.GetUserById(ctx, userId); err != nil {
 		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 	}
 

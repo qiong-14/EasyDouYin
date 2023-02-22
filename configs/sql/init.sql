@@ -5,6 +5,7 @@ drop table if exists `user`;
 drop table if exists `like_video`;
 drop table if exists `message`;
 drop table if exists `comment_video`;
+drop table if exists `follows`;
 -- 用户表 users --
 create table if not exists `user`
 (
@@ -63,6 +64,16 @@ create table if not exists user_relation
 
 ) comment '用户社交信息表';
 
+create table if not exists follows
+(
+    `id`              bigint primary key auto_increment comment '记录ID',
+    `followed_id`         bigint comment '被关注者id',
+    `follower_id`     bigint comment '关注者id',
+    `cancel`          tinyint not null,
+    `created_at`  timestamp    not null default current_timestamp,
+    `updated_at`  timestamp    not null default current_timestamp on update current_timestamp,
+    `deleted_at`  timestamp    null     default null
+) comment '用户社交信息表';
 
 create table if not exists videos
 (

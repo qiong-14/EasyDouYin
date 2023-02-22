@@ -6,6 +6,7 @@ const (
 	LikeVideoTableName    = "like_video"
 	MessageTableName      = "message"
 	CommentVideoTableName = "comment_video"
+	FollowTableName       = "follows"
 	FeedVideosCount       = 20
 	MySQLDefaultDSN       = "readygo:123456@tcp(localhost:9910)/douyindb?charset=utf8&parseTime=True&loc=Local"
 )
@@ -46,4 +47,9 @@ const (
 	ConfigHasNoEffect         = -4
 
 	RedisInitFailed = -5
+)
+
+const (
+	RelationFollow   = 1
+	RelationUnfollow = 2
 )

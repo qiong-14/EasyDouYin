@@ -15,9 +15,9 @@ func newExpect(t *testing.T) *httpexpect.Expect {
 		Client:   http.DefaultClient,
 		BaseURL:  serverAddr,
 		Reporter: httpexpect.NewAssertReporter(t),
-		//Printers: []httpexpect.Printer{
-		//	httpexpect.NewDebugPrinter(t, false),
-		//},
+		Printers: []httpexpect.Printer{
+			httpexpect.NewDebugPrinter(t, false),
+		},
 	})
 }
 

@@ -2,10 +2,11 @@ package dal
 
 import (
 	"context"
-	"github.com/qiong-14/EasyDouYin/constants"
-	"gorm.io/gorm"
 	"log"
 	"strconv"
+
+	"github.com/qiong-14/EasyDouYin/constants"
+	"gorm.io/gorm"
 )
 
 type Follows struct {
@@ -28,7 +29,7 @@ func (f Follows) TableName() string {
 }
 
 func UpdateOrCreateRelation(ctx context.Context, f *Follows) error {
-	if DB.Model(&f).Where(&Follows{FollowedId: f.FollowedId, FollowerId: f.FollowerId}).Updates(&f).RowsAffected == 0 {
+	if DB.Model(&Follows{}).Where("followed_id=? AND follower_id=? ", f.FollowedId, f.FollowerId).Updates(&f).RowsAffected == 0 {
 		if err := CreateRelation(ctx, f); err != nil {
 			return err
 		}
@@ -203,6 +204,20 @@ func idToUserVo(ctx context.Context, newuserId int64, olduserId int64, followed 
 
 	return &userVo, nil
 
+}
 
-
+// 查询A是否关注B
+func IsFollow(ctx context.Context, FollowedId int64, FollowerId int64) (bool, error) {
+	f := Follows{}
+	if err := DB.WithContext(ctx).
+		Model(&Follows{}).
+		Where(&Follows{FollowedId: FollowedId, FollowerId: FollowerId, ActionType: constants.RelationFollow}).
+		Find(&f).Error; err != nil {
+		return false, err
+	}
+	if f.ActionType == 1 {
+		return true, nil
+	} else {
+		return false, nil
+	}
 }

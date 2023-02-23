@@ -75,3 +75,16 @@ func DeleteCommentInfo(ctx context.Context, id int64) error {
 	//log.Printf("update  %s video info success", []string{"like", "dislike"}[int8(cancel)-1])
 	return nil
 }
+
+// GetCommentVideoIdCount return comment count of video by update time
+func GetCommentVideoIdCount(ctx context.Context, videoId int64) (int64, error) {
+	var total int64
+	if err := DB.
+		WithContext(ctx).
+		Model(&Comment{}).
+		Where(&Comment{VideoId: videoId}).
+		Count(&total).Error; err != nil {
+		return 0, err
+	}
+	return total, nil
+}

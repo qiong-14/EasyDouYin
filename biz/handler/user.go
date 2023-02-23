@@ -76,6 +76,8 @@ func UserInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	if user, _ := service.GetUserInfo(ctx, id); user != dal.InvalidUser {
+		FollowCount, _ := dal.FollowCount(ctx, user.Id)
+		FollowerCount, _ := dal.FollowerCount(ctx, user.Id)
 		favoriteCount := service.GetFavVideoCount(ctx, user.Id)
 		workCount, _ := dal.GetPublishListById(ctx, user.Id)
 		c.JSON(http.StatusOK, resp.UserResponse{
@@ -83,6 +85,8 @@ func UserInfo(ctx context.Context, c *app.RequestContext) {
 			User: resp.User{
 				Id:            user.Id,
 				Name:          user.Name,
+				FollowCount:   FollowCount,
+				FollowerCount: FollowerCount,
 				FavoriteCount: favoriteCount,
 				WorkCount:     int64(len(workCount)),
 			},

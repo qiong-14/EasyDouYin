@@ -2,17 +2,19 @@ package handler
 
 import (
 	"context"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/hertz-contrib/jwt"
 	"github.com/qiong-14/EasyDouYin/biz/resp"
 	"github.com/qiong-14/EasyDouYin/constants"
 	"github.com/qiong-14/EasyDouYin/dal"
 	"github.com/qiong-14/EasyDouYin/middleware"
 	"github.com/qiong-14/EasyDouYin/service"
-	"strconv"
-	"sync"
-	"time"
 )
 
 type FeedResponse struct {
@@ -21,10 +23,10 @@ type FeedResponse struct {
 	NextTime  int64        `json:"next_time,omitempty"`
 }
 
-func getVideoEntities(ctx context.Context, videoInfos []dal.VideoInfo) []resp.Video {
+func getVideoEntities(ctx context.Context, c *app.RequestContext, videoInfos []dal.VideoInfo) []resp.Video {
 	videosList := make([]resp.Video, len(videoInfos))
-
 	var wg sync.WaitGroup
+	userId, _ := middleware.GetUserIdRedis(jwt.GetToken(ctx, c))
 
 	wg.Add(len(videoInfos))
 	for idx, info := range videoInfos {
@@ -40,19 +42,23 @@ func getVideoEntities(ctx context.Context, videoInfos []dal.VideoInfo) []resp.Vi
 			favoriteCount, _ := service.GetVideoFavUserCount(ctx, int64(videoInfo.ID))
 			//favoriteCount, _ := dal.GetLikeUserCount(ctx, int64(videoInfo.ID))
 
+			FollowCount, _ := dal.FollowCount(ctx, user.Id)
+			FollowerCount, _ := dal.FollowerCount(ctx, user.Id)
+			IsFollow, _ := dal.IsFollow(ctx, user.Id, userId)
+			CommentCount, _ := dal.GetCommentVideoIdCount(ctx, int64(videoInfo.ID))
 			videosList[resPos] = resp.Video{
 				Id: int64(videoInfo.ID),
 				Author: resp.User{
 					Id:            user.Id,
 					Name:          user.Name,
-					FollowCount:   0,
-					FollowerCount: 0,
-					IsFollow:      true,
+					FollowCount:   FollowCount,
+					FollowerCount: FollowerCount,
+					IsFollow:      IsFollow,
 				},
 				PlayUrl:       playUrl.String(),
 				CoverUrl:      coverUrl.String(),
 				FavoriteCount: favoriteCount,
-				CommentCount:  0,
+				CommentCount:  CommentCount,
 				IsFavorite:    false,
 			}
 		}(idx, info)
@@ -63,10 +69,10 @@ func getVideoEntities(ctx context.Context, videoInfos []dal.VideoInfo) []resp.Vi
 	return videosList
 }
 
-func GetVideoStream(ctx context.Context, lastTime int64, limit int) ([]resp.Video, int64) {
+func GetVideoStream(ctx context.Context, c *app.RequestContext, lastTime int64, limit int) ([]resp.Video, int64) {
 	videoInfos := dal.GetVideoStreamInfo(ctx, lastTime, limit)
 
-	return getVideoEntities(ctx, videoInfos), videoInfos[len(videoInfos)-1].CreatedAt.Unix()
+	return getVideoEntities(ctx, c, videoInfos), videoInfos[len(videoInfos)-1].CreatedAt.Unix()
 }
 
 func Feed(ctx context.Context, c *app.RequestContext) {
@@ -77,7 +83,7 @@ func Feed(ctx context.Context, c *app.RequestContext) {
 		latestTime, _ = strconv.Atoi(latestTimeStr)
 	}
 
-	videoList, nextTime := GetVideoStream(ctx, int64(latestTime), constants.FeedVideosCount)
+	videoList, nextTime := GetVideoStream(ctx, c, int64(latestTime), constants.FeedVideosCount)
 	c.JSON(consts.StatusOK, FeedResponse{
 		Response:  resp.Response{StatusCode: 0},
 		VideoList: videoList,

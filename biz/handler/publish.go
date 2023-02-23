@@ -95,7 +95,7 @@ func Publish(ctx context.Context, c *app.RequestContext) {
 
 // PublishList all users have same publish video list
 func PublishList(ctx context.Context, c *app.RequestContext) {
-	userId, _ := strconv.Atoi(c.Query("user_id"))
+	userId, err := strconv.Atoi(c.Query("user_id"))
 
 	videosInfos, err := dal.GetPublishListById(ctx, int64(userId))
 	if err != nil {
@@ -103,7 +103,7 @@ func PublishList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	videosList := getVideoEntities(ctx, videosInfos)
+	videosList := getVideoEntities(ctx, c, videosInfos)
 
 	c.JSON(consts.StatusOK, VideoListResponse{
 		Response: resp.Response{

@@ -30,10 +30,9 @@ func RelationAction(ctx context.Context, c *app.RequestContext) {
 	if err != nil {
 		return
 	}
-	if _, err := dal.GetUserById(ctx, userId); err == nil {
-		c.JSON(http.StatusOK, resp.Response{StatusCode: 0})
-	} else {
+	if _, err := dal.GetUserById(ctx, userId); err != nil {
 		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+		return
 	}
 	//get followId from request
 	followId, err := strconv.ParseInt(c.Query("to_user_id"), 10, 64)
@@ -78,12 +77,14 @@ func FollowList(ctx context.Context, c *app.RequestContext) {
 	}
 	if _, err := dal.GetUserById(ctx, userId); err != nil {
 		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+		return
 	}
 
 	followUserList, err := dal.FollowUserList(ctx, userId)
 
 	if err != nil {
 		c.JSON(http.StatusOK, resp.Response{StatusCode: 1, StatusMsg: "fail to get follow list"})
+		return
 	}
 
 	c.JSON(http.StatusOK, UserListResponse{

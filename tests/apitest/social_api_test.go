@@ -2,7 +2,6 @@ package apitest
 
 import (
 	"github.com/stretchr/testify/assert"
-	"log"
 	"net/http"
 	"testing"
 )
@@ -13,10 +12,10 @@ func TestRelation(t *testing.T) {
 	userIdA, tokenA := getTestUserToken(testUserA, e)
 	userIdB, tokenB := getTestUserToken(testUserB, e)
 
-	log.Println(userIdA)
-	log.Println(tokenA)
-	log.Println(userIdB)
-	log.Println(tokenB)
+	//log.Println(userIdA)
+	//log.Println(tokenA)
+	//log.Println(userIdB)
+	//log.Println(tokenB)
 
 	relationResp := e.POST("/douyin/relation/action/").
 		WithQuery("token", tokenA).WithQuery("to_user_id", userIdB).WithQuery("action_type", 1).

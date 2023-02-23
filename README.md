@@ -69,9 +69,10 @@ todo
 ```shell
 go apitest tests/random_data_test.go
 ```
-### 用户注册
+### Hertz.JWT鉴权
 基于Hertz.JWT鉴权的注册，注册后调用了mw.JwtMiddleware.LoginHandler进行登录
 [JWT认证 | CloudWeGo](https://www.cloudwego.io/zh/docs/hertz/tutorials/basic-feature/middleware/jwt/)
+用户注册
 ```shell
 curl --request POST 'http://localhost:8080/douyin/user/register/?username=704788475&password=111111'
 # {"status_code":1,"status_msg":"user already exits","token":""}
@@ -79,7 +80,7 @@ curl --request POST 'http://localhost:8080/douyin/user/register/?username=704788
 curl --request POST 'http://localhost:8080/douyin/user/register/?username=readygo&password=111111'
 # {"status_code":0,"status_msg":"login success","user_id":10,"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzYwNDU0NzAsImlkZW50aXR5IjoicmVhZHlnbyIsIm9yaWdfaWF0IjoxNjc2MDQxODcwfQ.3G05OinRGLYDGlsDz5zt4XJX4UnjW6XnILRk1SvK2gM"}
 ```
-### 用户登录
+用户登录
 ```shell
 curl --request POST 'http://localhost:8080/douyin/user/login/?username=readygo11&password=111111'
 # {"status_code":401,"status_msg":"record not found","token":""}
@@ -87,7 +88,7 @@ curl --request POST 'http://localhost:8080/douyin/user/login/?username=readygo11
  curl --request POST 'http://localhost:8080/douyin/user/login/?username=readygo&password=111111'
 # {"status_code":0,"status_msg":"login success","user_id":10,"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzYwNDU1ODYsImlkZW50aXR5IjoicmVhZHlnbyIsIm9yaWdfaWF0IjoxNjc2MDQxOTg2fQ.BIMU_OS2CLrmmN1vrW0XWkFwaPPu5gPtViBAnw-lXK4"}
 ```
-### 鉴权后的ping
+鉴权后的ping
 ```shell
 ## you need replace `($token)` into real token 
 curl --location --request GET 'localhost:8080/douyin/ping' --header 'Authorization: Bearer ($token)'

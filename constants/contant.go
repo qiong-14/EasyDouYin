@@ -2,13 +2,11 @@ package constants
 
 const (
 	UserTableName         = "user"
-	VideoTableName        = "videos"
+	VideoTableName        = "video"
 	LikeVideoTableName    = "like_video"
 	MessageTableName      = "message"
-	UserRelationName   = "user_relation"
-	UserInfoName       = "user_info"
 	CommentVideoTableName = "comment_video"
-	FollowTableName       = "follows"
+	FollowTableName       = "follow"
 	FeedVideosCount       = 20
 	MySQLDefaultDSN       = "readygo:123456@tcp(localhost:9910)/douyindb?charset=utf8&parseTime=True&loc=Local"
 )

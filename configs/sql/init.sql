@@ -1,5 +1,5 @@
 
-drop table if exists video;
+drop table if exists `video`;
 drop table if exists `user`;
 drop table if exists `like_video`;
 drop table if exists `message`;
@@ -15,11 +15,26 @@ create table if not exists `user`
     `updated_at` timestamp    not null default current_timestamp on update current_timestamp comment '更新时间',
     `deleted_at` timestamp    null     default null comment '删除时间',
     primary key (`id`),
+    unique key (`name`),
     key `name_password_idx` (`name`, `password`)
 ) engine = InnoDB
   default charset = utf8mb4
   collate = utf8mb4_general_ci comment ='用户表';
-
+create table if not exists video
+(
+    `id`              bigint primary key auto_increment comment '视频ID',
+    `created_at`      timestamp not null default current_timestamp comment '创建时间',
+    `updated_at`      timestamp not null default current_timestamp on update current_timestamp comment '更新时间',
+    `deleted_at`      timestamp null     default null comment '删除时间',
+    `title`           varchar(255) comment '视频标题',
+    `label`           varchar(255) comment '视频标签',
+    `owner_id`        bigint    not null comment '视频所有者',
+    `likes_count`     bigint             default 0 comment '点赞人数',
+    `comment_archive` longtext comment '评论信息的最新归档',
+    foreign key (owner_id) references `user` (id)
+) engine = InnoDB
+  default charset = utf8mb4
+  collate = utf8mb4_general_ci comment '视频信息表';
 create table if not exists `like_video`
 (
     `id`         bigint not null auto_increment comment 'PK',
@@ -33,8 +48,8 @@ create table if not exists `like_video`
     foreign key `user_id` (`user_id`) references `user` (id),
     foreign key `video_id` (`video_id`) references `video` (id)
 ) engine = InnoDB
-    default charset = utf8mb4
-    collate = utf8mb4_general_ci comment '点赞表';
+  default charset = utf8mb4
+  collate = utf8mb4_general_ci comment '点赞表';
 
 create table if not exists `comment_video`
 (
@@ -49,8 +64,8 @@ create table if not exists `comment_video`
     foreign key `user_id` (`user_id`) references `user` (id),
     foreign key `video_id` (`video_id`) references `video` (id)
 ) engine = InnoDB
-    default charset = utf8mb4
-    collate = utf8mb4_general_ci comment '评论表';
+  default charset = utf8mb4
+  collate = utf8mb4_general_ci comment '评论表';
 
 create table if not exists follow
 (
@@ -67,21 +82,7 @@ create table if not exists follow
   default charset = utf8mb4
   collate = utf8mb4_general_ci comment '用户社交信息表';
 
-create table if not exists video
-(
-    `id`              bigint primary key auto_increment comment '视频ID',
-    `created_at`      timestamp not null default current_timestamp comment '创建时间',
-    `updated_at`      timestamp not null default current_timestamp on update current_timestamp comment '更新时间',
-    `deleted_at`      timestamp null     default null comment '删除时间',
-    `title`           varchar(255) comment '视频标题',
-    `label`           varchar(255) comment '视频标签',
-    `owner_id`        bigint    not null comment '视频所有者',
-    `likes_count`     bigint             default 0 comment '点赞人数',
-    `comment_archive` longtext comment '评论信息的最新归档',
-    foreign key (owner_id) references `user` (id)
-) engine = InnoDB
-  default charset = utf8mb4
-  collate = utf8mb4_general_ci comment '视频信息表';;
+
 
 
 create table if not exists `message`

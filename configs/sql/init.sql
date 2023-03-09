@@ -1,10 +1,9 @@
-
-drop table if exists `video`;
-drop table if exists `user`;
 drop table if exists `like_video`;
 drop table if exists `message`;
 drop table if exists `comment_video`;
 drop table if exists `follow`;
+drop table if exists `video`;
+drop table if exists `user`;
 -- 用户表 users --
 create table if not exists `user`
 (
@@ -76,6 +75,8 @@ create table if not exists follow
     `created_at`  timestamp    not null default current_timestamp comment '创建时间',
     `updated_at`  timestamp    not null default current_timestamp on update current_timestamp comment '更新时间',
     `deleted_at`  timestamp    null     default null comment '删除时间',
+    key `user_follower_idx` (`followed_id`, `follower_id`),
+
     foreign key `followed_idx` (`followed_id`) references `user` (id),
     foreign key `follow_idx` (`follower_id`) references `user` (id)
 ) engine = InnoDB
@@ -95,6 +96,7 @@ create table if not exists `message`
     `from_user_id`    bigint not null  comment '发送者id',
     `content`         varchar(255)     comment '消息内容',
     `create_time`     bigint null      comment '创建时间int64',
+    key `user_to_user_idx` (`to_user_id`, `from_user_id`),
     foreign key (to_user_id) references `user` (id),
     foreign key (from_user_id) references `user` (id)
 )engine = InnoDB
